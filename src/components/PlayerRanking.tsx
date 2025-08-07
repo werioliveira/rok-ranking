@@ -126,7 +126,7 @@ export const PlayerRanking = () => {
         {/* Mensagem quando não há dados */}
         {!loading && players.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-lg text-muted-foreground">Nothing Player are found.</p>
+            <p className="text-lg text-muted-foreground">No Players found.</p>
           </div>
         )}
       </div>
