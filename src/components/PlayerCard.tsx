@@ -1,7 +1,7 @@
 import { Player } from "@/types/player";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Crown, Sword, Shield, Trophy, Users } from "lucide-react";
+import { Crown, Sword, Shield, Trophy, Users, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 interface PlayerCardProps {
@@ -72,10 +72,16 @@ export const PlayerCard = ({ player, rank }: PlayerCardProps) => {
 
         {/* Player name */}
         <div className="space-y-1">
-          <Link href={`/player/${player.playerId}`} className="group-hover:text-primary transition-colors">
-          <h3 className="text-xl font-bold text-foreground group-hover:text-primary-glow transition-royal">
-            {player.name}
-          </h3>
+          <Link
+            href={`/player/${player.playerId}`}
+            className="inline-flex items-center gap-2 px-2 py-1 rounded-lg transition-colors group-hover:bg-primary/10 group-hover:shadow-[0_0_8px_0_rgba(80,120,255,0.15)] group-hover:text-primary-glow"
+          >
+            <h3 className="text-xl font-bold text-foreground transition-royal">
+              {player.name}
+            </h3>
+            <span className="flex items-center justify-center w-7 h-7 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-all">
+              <ArrowRight className="w-5 h-5 text-primary" />
+            </span>
           </Link>
 
           <p className="text-sm text-muted-foreground">ID: {player.playerId}</p>
