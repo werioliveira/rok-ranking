@@ -68,7 +68,7 @@ export const RankingHeader = ({ sortField, onSortChange, loading = false }: Rank
                 transition-royal flex items-center gap-2
                 ${sortField === option.field 
                   ? 'bg-gradient-to-r from-primary to-primary-glow shadow-royal' 
-                  : 'hover:bg-card/80 hover:border-primary/50'
+                  : 'hover:bg-[#eed895] hover:border-primary/50'
                 }
                 ${loading ? 'opacity-50 cursor-not-allowed' : ''}
               `}
