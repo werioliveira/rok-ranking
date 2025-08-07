@@ -1,0 +1,180 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Rise of Kingdoms Theme - Imperial Gold & Dark Military */
+    --background: 220 15% 8%;
+    --foreground: 45 100% 85%;
+
+    --card: 220 20% 12%;
+    --card-foreground: 45 90% 90%;
+
+    --popover: 220 25% 10%;
+    --popover-foreground: 45 95% 92%;
+
+    --primary: 45 90% 55%;
+    --primary-foreground: 220 25% 15%;
+    --primary-glow: 45 100% 70%;
+
+    --secondary: 30 40% 25%;
+    --secondary-foreground: 45 80% 85%;
+
+    --muted: 220 15% 18%;
+    --muted-foreground: 45 20% 65%;
+
+    --accent: 35 85% 45%;
+    --accent-foreground: 220 25% 10%;
+
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 220 25% 20%;
+    --input: 220 25% 15%;
+    --ring: 45 90% 55%;
+
+    --radius: 0.75rem;
+
+    /* Custom gaming theme colors */
+    --gold: 45 90% 55%;
+    --gold-light: 45 100% 70%;
+    --gold-dark: 35 80% 40%;
+    --bronze: 30 60% 45%;
+    --iron: 210 15% 35%;
+    --blood: 0 75% 50%;
+    --victory: 120 60% 50%;
+
+    /* Gradients */
+    --gradient-royal: linear-gradient(135deg, hsl(45 90% 55%), hsl(35 80% 40%));
+    --gradient-power: linear-gradient(135deg, hsl(45 100% 70%), hsl(45 90% 55%));
+    --gradient-dark: linear-gradient(135deg, hsl(220 25% 12%), hsl(220 15% 8%));
+    --gradient-bronze: linear-gradient(135deg, hsl(30 60% 45%), hsl(25 50% 35%));
+
+    /* Shadows */
+    --shadow-royal: 0 10px 30px -5px hsl(45 90% 55% / 0.3);
+    --shadow-dark: 0 10px 30px -10px hsl(220 100% 0% / 0.5);
+    --shadow-glow: 0 0 30px hsl(45 100% 70% / 0.4);
+
+    /* Animations */
+    --transition-royal: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-smooth: all 0.3s ease-out;
+  }
+
+  .dark {
+    --background: 220 15% 8%;
+    --foreground: 45 100% 85%;
+
+    --card: 220 20% 12%;
+    --card-foreground: 45 90% 90%;
+
+    --popover: 220 25% 10%;
+    --popover-foreground: 45 95% 92%;
+
+    --primary: 45 90% 55%;
+    --primary-foreground: 220 25% 15%;
+
+    --secondary: 30 40% 25%;
+    --secondary-foreground: 45 80% 85%;
+
+    --muted: 220 15% 18%;
+    --muted-foreground: 45 20% 65%;
+
+    --accent: 35 85% 45%;
+    --accent-foreground: 220 25% 10%;
+
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 220 25% 20%;
+    --input: 220 25% 15%;
+    --ring: 45 90% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    background: linear-gradient(135deg, hsl(220 15% 8%), hsl(220 20% 12%));
+    min-height: 100vh;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--primary));
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary-glow));
+  }
+}
+
+@layer components {
+  .gradient-royal {
+    background: var(--gradient-royal);
+  }
+
+  .gradient-power {
+    background: var(--gradient-power);
+  }
+
+  .gradient-bronze {
+    background: var(--gradient-bronze);
+  }
+
+  .shadow-royal {
+    box-shadow: var(--shadow-royal);
+  }
+
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .transition-royal {
+    transition: var(--transition-royal);
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes glow {
+  from {
+    text-shadow: 0 0 10px hsl(var(--primary-glow) / 0.5);
+  }
+  to {
+    text-shadow: 0 0 20px hsl(var(--primary-glow) / 0.8);
+  }
+}

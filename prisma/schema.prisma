@@ -1,0 +1,31 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model PlayerSnapshot {
+  id            Int      @id @default(autoincrement())
+  createdAt     DateTime @default(now())
+  playerId      Int
+  name          String
+  power         Int
+  killpoints    Int
+  deads         Int
+  t1Kills       Int
+  t2Kills       Int
+  t3Kills       Int
+  t4Kills       Int
+  t5Kills       Int
+  totalKills    Int
+  t45Kills      Int
+  ranged        Int
+  rssGathered   BigInt
+  rssAssist     BigInt
+  helps         Int
+  alliance      String
+}
