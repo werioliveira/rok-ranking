@@ -29,7 +29,9 @@ import {
   Medal,
   AlertCircle,
   Axe,
-  Filter
+  Filter,
+  CalendarDays,
+  X
 } from 'lucide-react';
 import { usePlayerDetail } from '@/hooks/usePlayerDetail';
 
@@ -40,29 +42,34 @@ const PlayerDetailPage = () => {
   
   const { data: playerData, loading, error } = usePlayerDetail(playerId);
   const [selectedChart, setSelectedChart] = useState<'power' | 'totalKills' | 'killpoints'>('power');
-  const [dateFilter, setDateFilter] = useState<'7d' | '30d' | '90d' | 'all'>('all');
+  const [dateFilter, setDateFilter] = useState<'7d' | '30d' | '90d' | 'all' | 'custom'>('all');
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
+  const [showCustomDatePicker, setShowCustomDatePicker] = useState(false);
 
   // Filtra snapshots com base no filtro de data
   const filteredSnapshots = useMemo(() => {
     if (!playerData) return [];
 
-    if (dateFilter === 'all') {
-      return playerData.history;
+    if (dateFilter === 'custom' && startDate && endDate) {
+      // Adiciona timezone para evitar problemas de fuso horário
+      const start = new Date(startDate + 'T00:00:00');
+      const end = new Date(endDate + 'T23:59:59');
+      
+      return playerData.history.filter(snapshot => {
+        const snapDate = new Date(snapshot.createdAt);
+        return snapDate >= start && snapDate <= end;
+      });
     }
 
-    const now = new Date();
-    const daysToFilter = {
-      '7d': 7,
-      '30d': 30,
-      '90d': 90
-    }[dateFilter];
+    if (dateFilter === 'all') return playerData.history;
 
+    const now = new Date();
+    const daysToFilter = { '7d': 7, '30d': 30, '90d': 90 }[dateFilter as '7d' | '30d' | '90d'];
     const filterDate = new Date(now.getTime() - (daysToFilter * 24 * 60 * 60 * 1000));
-    
-    return playerData.history.filter(
-      snapshot => new Date(snapshot.createdAt) >= filterDate
-    );
-  }, [playerData, dateFilter]);
+
+    return playerData.history.filter(snapshot => new Date(snapshot.createdAt) >= filterDate);
+  }, [playerData, dateFilter, startDate, endDate]);
 
   // Último snapshot do período (para representar "current" dentro do filtro)
   const filteredCurrentData = useMemo(() => {
@@ -128,12 +135,49 @@ const PlayerDetailPage = () => {
   const handleBackClick = () => {
     router.back();
   };
+
+  const handleDateFilterChange = (filterType: '7d' | '30d' | '90d' | 'all' | 'custom') => {
+    if (filterType === 'custom') {
+      setShowCustomDatePicker(true);
+    } else {
+      setShowCustomDatePicker(false);
+      setStartDate('');
+      setEndDate('');
+    }
+    setDateFilter(filterType);
+  };
+
+  const handleApplyCustomDates = () => {
+    if (startDate && endDate) {
+      setShowCustomDatePicker(false);
+    }
+  };
+
+  const handleClearCustomDates = () => {
+    setStartDate('');
+    setEndDate('');
+    setDateFilter('all');
+    setShowCustomDatePicker(false);
+  };
+
+  const getDateRangeText = () => {
+    if (dateFilter === 'custom' && startDate && endDate) {
+      // Adiciona timezone offset para evitar problemas de fuso horário
+      const start = new Date(startDate + 'T00:00:00');
+      const end = new Date(endDate + 'T00:00:00');
+      const startFormatted = start.toLocaleDateString('pt-BR');
+      const endFormatted = end.toLocaleDateString('pt-BR');
+      return `${startFormatted} - ${endFormatted}`;
+    }
+    return null;
+  };
   
   const dateFilterOptions = [
     { key: '7d', label: '7 days' },
     { key: '30d', label: '30 days' },
     { key: '90d', label: '90 days' },
-    { key: 'all', label: 'All time' }
+    { key: 'all', label: 'All time' },
+    { key: 'custom', label: 'Custom' }
   ];
 
   if (loading) {
@@ -254,7 +298,7 @@ const PlayerDetailPage = () => {
                     {dateFilterOptions.map(({ key, label }) => (
                       <button
                         key={key}
-                        onClick={() => setDateFilter(key as any)}
+                        onClick={() => handleDateFilterChange(key as any)}
                         className={`px-3 py-1 text-sm rounded-md transition-colors ${
                           dateFilter === key
                             ? 'bg-background shadow-sm text-foreground'
@@ -290,6 +334,65 @@ const PlayerDetailPage = () => {
                 </div>
               </div>
             </div>
+
+            {/* Custom Date Picker */}
+            {showCustomDatePicker && (
+              <div className="mb-6 p-4 bg-muted/50 rounded-lg border">
+                <div className="flex items-center gap-2 mb-3">
+                  <CalendarDays className="w-4 h-4 text-primary" />
+                  <h4 className="font-semibold">Select Custom Date Range</h4>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-4 items-end">
+                  <div className="flex-1">
+                    <label className="text-sm text-muted-foreground mb-1 block">Start Date</label>
+                    <input
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      className="w-full px-3 py-2 rounded-md border bg-background"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="text-sm text-muted-foreground mb-1 block">End Date</label>
+                    <input
+                      type="date"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      className="w-full px-3 py-2 rounded-md border bg-background"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleApplyCustomDates}
+                      disabled={!startDate || !endDate}
+                      className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Apply
+                    </button>
+                    <button
+                      onClick={handleClearCustomDates}
+                      className="px-3 py-2 text-muted-foreground hover:text-foreground"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Custom Date Range Display */}
+            {dateFilter === 'custom' && getDateRangeText() && (
+              <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
+                <Calendar className="w-4 h-4" />
+                <span>Period: {getDateRangeText()}</span>
+                <button
+                  onClick={handleClearCustomDates}
+                  className="ml-2 text-red-500 hover:text-red-700"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            )}
 
             {/* Chart */}
             <div className="h-80">
@@ -342,7 +445,12 @@ const PlayerDetailPage = () => {
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-bold">Kills Distribution</h3>
               <div className="text-sm text-muted-foreground">
-                {dateFilter === 'all' ? 'Current' : `Last ${dateFilter.replace('d', ' days')}`}
+                {dateFilter === 'all' 
+                  ? 'Current' 
+                  : dateFilter === 'custom' && getDateRangeText()
+                    ? 'Custom Range'
+                    : `Last ${dateFilter.replace('d', ' days')}`
+                }
               </div>
             </div>
             <div className="h-64">
