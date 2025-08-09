@@ -10,6 +10,7 @@ export async function GET(request: Request) {
     // Parâmetros de paginação
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '12')
+    const searchTerm = searchParams.get('search') || ''
     const offset = (page - 1) * limit
     const sortBy = searchParams.get('sortBy') || 'Power'
 
@@ -24,17 +25,29 @@ export async function GET(request: Request) {
 
     const orderByField = sortFieldMap[sortBy] || 'power'
 
-    // Primeiro, contar o total de jogadores únicos
-    const totalPlayers = await prisma.$queryRawUnsafe<{ count: BigInt }[]>(`
+    // Construir condição de busca
+    const searchCondition = searchTerm.trim() 
+      ? `AND name LIKE '%${searchTerm.trim().replace(/'/g, "''")}%'`
+      : ''
+
+    // Primeiro, contar o total de jogadores únicos (com filtro de busca se aplicável)
+    const totalPlayersQuery = `
       SELECT COUNT(DISTINCT playerId) as count
       FROM PlayerSnapshot
-    `)
+      WHERE (playerId, createdAt) IN (
+        SELECT playerId, MAX(createdAt)
+        FROM PlayerSnapshot
+        GROUP BY playerId
+      )
+      ${searchCondition}
+    `
     
+    const totalPlayers = await prisma.$queryRawUnsafe<{ count: BigInt }[]>(totalPlayersQuery)
     const total = Number(totalPlayers[0].count)
     const totalPages = Math.ceil(total / limit)
 
-    // Buscar os snapshots mais recentes com paginação e ordenação
-    const latestSnapshots = await prisma.$queryRawUnsafe<any[]>(`
+    // Buscar os snapshots mais recentes com paginação, ordenação e busca
+    const playersQuery = `
       SELECT *
       FROM PlayerSnapshot
       WHERE (playerId, createdAt) IN (
@@ -42,9 +55,12 @@ export async function GET(request: Request) {
         FROM PlayerSnapshot
         GROUP BY playerId
       )
+      ${searchCondition}
       ORDER BY ${orderByField} DESC
       LIMIT ${limit} OFFSET ${offset}
-    `)
+    `
+
+    const latestSnapshots = await prisma.$queryRawUnsafe<any[]>(playersQuery)
 
     const serialized = latestSnapshots.map(player => ({
       ...player,
