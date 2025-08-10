@@ -1,10 +1,9 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Analytics from "@/components/Analytics";
+import DonationButton from "@/components/DonationButton";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,6 +22,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <TooltipProvider>
           <Analytics />
+                  <DonationButton />
           {children}
         </TooltipProvider>
       </body>

@@ -7,6 +7,7 @@ import { PlayerCard } from "./PlayerCard";
 import { RankingHeader } from "./RankingHeader";
 import { PaginationPages } from "./PaginationPages";
 import { Loader2, Search, X } from "lucide-react";
+import DonationButton from "./DonationButton";
 
 export const PlayerRanking = () => {
   const [players, setPlayers] = useState<Player[]>([]);
@@ -114,6 +115,7 @@ export const PlayerRanking = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
+
       <div className="container mx-auto px-4 py-8">
         <RankingHeader sortField={sortField} onSortChange={setSortField} loading={loading} />
 
