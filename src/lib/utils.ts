@@ -4,6 +4,25 @@ import { twMerge } from "tailwind-merge"
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
+
+export const formatNumber = (num: number) => {
+    if (num >= 1e9) return (num / 1e9).toFixed(1) + 'B';
+    if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
+    if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K';
+    return num.toString();
+  };
+
+  export const formatDelta = (delta: number, showSign: boolean = true) => {
+    const sign = showSign ? (delta > 0 ? '+' : delta < 0 ? '' : '') : '';
+    return `${sign}${formatNumber(Math.abs(delta))}`;
+  };
+
+  export const getDeltaColor = (delta: number) => {
+    if (delta > 0) return 'text-green-500';
+    if (delta < 0) return 'text-red-500';
+    return 'text-muted-foreground';
+  };
+
 export function isValidCPF(cpf: string): boolean {
   cpf = cpf.replace(/[^\d]+/g, ''); // remove pontos e traços
 
@@ -29,3 +48,4 @@ export function isValidCPF(cpf: string): boolean {
 
   return digit2 === parseInt(cpf.charAt(10));
 }
+
