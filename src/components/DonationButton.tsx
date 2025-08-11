@@ -20,7 +20,7 @@ export default function DonationButton() {
       </svg>
 
       {/* Texto visível só em telas médias pra cima */}
-      <span className="hidden md:inline">Doar no Ko-fi</span>
+      <span className="hidden md:inline">Donate on Ko-fi</span>
     </a>
   );
 }
