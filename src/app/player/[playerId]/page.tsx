@@ -111,11 +111,12 @@ const PlayerDetailPage = () => {
     }
   };
 
-  const handleApplyCustomDates = () => {
-    if (startDate && endDate && new Date(startDate) <= new Date(endDate)) {
-      setShowCustomDatePicker(false);
-    }
-  };
+const handleApplyCustomDates = () => {
+  if (startDate && endDate && new Date(startDate) <= new Date(endDate)) {
+    setDateFilter('custom'); // garante que o hook use startDate e endDate
+    setShowCustomDatePicker(false);
+  }
+};
 
   const handleClearCustomDates = () => {
     setStartDate('');
@@ -124,12 +125,12 @@ const PlayerDetailPage = () => {
     setShowCustomDatePicker(false);
   };
 
-  const getDateRangeText = () => {
-    if (dateFilter === 'custom' && startDate && endDate) {
-      return `${new Date(startDate).toLocaleDateString('pt-BR')} - ${new Date(endDate).toLocaleDateString('pt-BR')}`;
-    }
-    return null;
-  };
+    const getDateRangeText = () => {
+      if (periodComparison?.period?.startDate && periodComparison?.period?.endDate) {
+        return `${periodComparison.period.startDate} → ${periodComparison.period.endDate}`;
+      }
+      return null;
+    };
   
   const dateFilterOptions = [
     { key: '7d', label: '7 days' },
