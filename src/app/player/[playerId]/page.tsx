@@ -555,11 +555,12 @@ return (
               }}
               labelFormatter={(label) => `Tier: ${label}`}
               contentStyle={{ 
-                backgroundColor: '#fff',
+                backgroundColor: '#dfddddff',
                 border: '1px solid #e5e7eb',
                 borderRadius: '8px',
                 color: '#333',
-                fontSize: '12px'
+                fontSize: '12px',
+                fontWeight: 'bold'
               }}
               labelStyle={{ color: '#333', fontWeight: 'bold' }}
             />
@@ -567,7 +568,7 @@ return (
               wrapperStyle={{ paddingTop: '10px' }}
               formatter={(value, entry: any) => {
                 const isGained = value.includes('Gained');
-                const color = isGained ? '#82ca9d' : '#8884d8'; // Verde para Gained, Roxo para Current
+                const color = isGained ? '#2a5239ff' : '#2a284bff'; // Verde para Gained, Roxo para Current
                 return (
                   <span style={{ color: '#fafafa', marginRight: '10px' }}>
                     {value}
@@ -578,7 +579,7 @@ return (
             <Bar 
               dataKey={selectedKillMetric === 'kills' ? 'kills' : 'killpoints'} 
               name={`Current ${selectedKillMetric === 'kills' ? 'Kills' : 'Kill Points'}`}
-              fill="#8884d8"
+              fill="#4d498fff"
             >
               {killsComparisonData.filter(e => ['T1','T2','T3', 'T4', 'T5'].includes(e.tier)).map((entry, index) => (
                 <Cell key={`current-${index}`} fill={entry.fill} />
@@ -588,7 +589,7 @@ return (
               <Bar 
                 dataKey={selectedKillMetric === 'kills' ? 'gainedKills' : 'gainedKillpoints'} 
                 name={`Gained ${selectedKillMetric === 'kills' ? 'Kills' : 'Kill Points'}`}
-                fill="#82ca9d"
+                fill="#318d54ff"
               >
                 {killsComparisonData.filter(e => ['T1','T2','T3', 'T4', 'T5'].includes(e.tier)).map((entry, index) => (
                   <Cell key={`gained-${index}`} fill={entry.fill} opacity={0.6} />
