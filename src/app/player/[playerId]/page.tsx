@@ -39,7 +39,8 @@ import {
   Plus,
   Minus,
   Equal,
-  Activity
+  Activity,
+  Skull
 } from 'lucide-react';
 import { usePlayerDetail } from '@/hooks/usePlayerDetail';
 
@@ -248,6 +249,17 @@ return (
             )}
           </div>
           <div className="text-center p-4 bg-muted/30 rounded-lg">
+            <Skull className="w-6 h-6 mx-auto mb-2 text-red-500" />
+            <div className="text-2xl font-bold">{formatNumber(parseInt(displayData.deads || 0))}</div>
+            <div className="text-sm text-muted-foreground mb-1">Deads</div>
+            {periodComparison && (
+              <div className={`text-xs flex items-center justify-center gap-1 ${getDeltaColor(periodComparison.deltas.deads)}`}>
+                {getDeltaIcon(periodComparison.deltas.deads)}
+                {formatDelta(periodComparison.deltas.deads)}
+              </div>
+            )}
+          </div>
+          {/* <div className="text-center p-4 bg-muted/30 rounded-lg">
             <Coins className="w-6 h-6 mx-auto mb-2 text-green-500" />
             <div className="text-2xl font-bold">{formatNumber(parseInt(displayData.rssGathered || '0'))}</div>
             <div className="text-sm text-muted-foreground mb-1">RSS Gathered</div>
@@ -257,7 +269,7 @@ return (
                 {formatDelta(periodComparison.deltas.rssGathered)}
               </div>
             )}
-          </div>
+          </div> */}
         </div>
 
         {/* Period Summary */}

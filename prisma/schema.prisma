@@ -13,19 +13,19 @@ model PlayerSnapshot {
   createdAt     DateTime @default(now())
   playerId      Int
   name          String
-  power         Int
-  killpoints    Int
-  deads         Int
-  t1Kills       Int
-  t2Kills       Int
-  t3Kills       Int
-  t4Kills       Int
-  t5Kills       Int
-  totalKills    Int
-  t45Kills      Int
-  ranged        Int
+  power         BigInt
+  killpoints    BigInt
+  deads         BigInt
+  t1Kills       BigInt
+  t2Kills       BigInt
+  t3Kills       BigInt
+  t4Kills       BigInt
+  t5Kills       BigInt
+  totalKills    BigInt
+  t45Kills      BigInt
+  ranged        BigInt
   rssGathered   BigInt
   rssAssist     BigInt
-  helps         Int
+  helps         BigInt
   alliance      String
 }

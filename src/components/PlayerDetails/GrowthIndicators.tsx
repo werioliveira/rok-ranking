@@ -1,5 +1,5 @@
 import { formatDelta, formatNumber, getDeltaColor } from "@/lib/utils";
-import { Axe, BarChart3, Equal, Minus, Sword, Target, TrendingUp, Trophy } from "lucide-react";
+import { Axe, BarChart3, Equal, Minus, Skull, Sword, Target, TrendingUp, Trophy } from "lucide-react";
 
 export default function GrowthIndicators({ displayData, periodComparison }: { displayData: any; periodComparison: any }) {
   const getDeltaIcon = (delta: number) => {
@@ -88,15 +88,15 @@ export default function GrowthIndicators({ displayData, periodComparison }: { di
           
           <div className="bg-card rounded-xl border shadow-lg p-6">
             <div className="flex items-center gap-3 mb-4">
-              <Target className="w-6 h-6 text-red-500" />
-              <h3 className="text-lg font-semibold">Ranged</h3>
+              <Skull className="w-6 h-6 text-red-500" />
+              <h3 className="text-lg font-semibold">Deads</h3>
             </div>
-            <div className="text-2xl font-bold">{formatNumber(displayData.ranged)}</div>
-            <div className="text-sm text-muted-foreground mb-1">Ranged Eliminations</div>
+            <div className="text-2xl font-bold">{formatNumber(displayData.deads)}</div>
+            <div className="text-sm text-muted-foreground mb-1">Deads Troops</div>
             {periodComparison && (
-              <div className={`text-xs flex items-center gap-1 ${getDeltaColor(periodComparison.deltas.ranged)}`}>
-                {getDeltaIcon(periodComparison.deltas.ranged)}
-                {formatDelta(periodComparison.deltas.ranged)} in period
+              <div className={`text-xs flex items-center gap-1 ${getDeltaColor(periodComparison.deltas.deads)}`}>
+                {getDeltaIcon(periodComparison.deltas.deads)}
+                {formatDelta(periodComparison.deltas.deads)} in period
               </div>
             )}
           </div>
