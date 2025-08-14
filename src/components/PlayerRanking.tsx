@@ -81,7 +81,7 @@ export const PlayerRanking = () => {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     // Scroll suave para o topo
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    //window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const clearSearch = () => {

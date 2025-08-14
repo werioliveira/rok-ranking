@@ -1,17 +1,17 @@
-// components/Pagination.tsx
 'use client';
 
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
+import { ChevronLeft, ChevronRight, MoreHorizontal, ChevronsLeft, ChevronsRight } from "lucide-react";
 
 interface PaginationProps {
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
   loading?: boolean;
+  step?: number;
 }
 
-export const PaginationPages = ({ currentPage, totalPages, onPageChange, loading = false }: PaginationProps) => {
+export const PaginationPages = ({ currentPage, totalPages, onPageChange, loading = false, step = 5 }: PaginationProps) => {
   if (totalPages <= 1) return null;
 
   const generatePageNumbers = () => {
@@ -19,16 +19,13 @@ export const PaginationPages = ({ currentPage, totalPages, onPageChange, loading
     const showEllipsis = totalPages > 7;
 
     if (!showEllipsis) {
-      // Se temos poucas páginas, mostrar todas
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
       }
     } else {
-      // Lógica mais complexa para muitas páginas
       pages.push(1);
 
       if (currentPage <= 4) {
-        // Início: 1, 2, 3, 4, 5, ..., último
         for (let i = 2; i <= Math.min(5, totalPages - 1); i++) {
           pages.push(i);
         }
@@ -37,13 +34,11 @@ export const PaginationPages = ({ currentPage, totalPages, onPageChange, loading
           pages.push(totalPages);
         }
       } else if (currentPage >= totalPages - 3) {
-        // Final: 1, ..., n-4, n-3, n-2, n-1, n
         pages.push('...');
         for (let i = Math.max(totalPages - 4, 2); i <= totalPages; i++) {
           pages.push(i);
         }
       } else {
-        // Meio: 1, ..., current-1, current, current+1, ..., último
         pages.push('...');
         for (let i = currentPage - 1; i <= currentPage + 1; i++) {
           pages.push(i);
@@ -58,45 +53,75 @@ export const PaginationPages = ({ currentPage, totalPages, onPageChange, loading
 
   const pages = generatePageNumbers();
 
+  const handleChangePage = (e: React.MouseEvent, page: number) => {
+    e.preventDefault(); // 🔹 Impede comportamento padrão
+    onPageChange(page);
+  };
+
   return (
-    <div className="flex items-center justify-center gap-2 py-8">
+    <div className="flex items-center justify-center gap-2 py-8 flex-wrap">
       <Button
+        type="button"
         variant="outline"
         size="sm"
-        onClick={() => onPageChange(currentPage - 1)}
+        onClick={(e) => handleChangePage(e, Math.max(1, currentPage - step))}
+        disabled={currentPage <= 1 || loading}
+        className="h-9 w-9 p-0"
+      >
+        <ChevronsLeft className="h-4 w-4" />
+      </Button>
+
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={(e) => handleChangePage(e, currentPage - 1)}
         disabled={currentPage <= 1 || loading}
         className="h-9 w-9 p-0"
       >
         <ChevronLeft className="h-4 w-4" />
       </Button>
 
-      {pages.map((page, index) => (
+      {pages.map((page, index) =>
         page === '...' ? (
           <div key={`ellipsis-${index}`} className="flex items-center justify-center h-9 w-9">
             <MoreHorizontal className="h-4 w-4" />
           </div>
         ) : (
           <Button
+            type="button"
             key={page}
             variant={currentPage === page ? "default" : "outline"}
             size="sm"
-            onClick={() => onPageChange(page as number)}
+            onClick={(e) => handleChangePage(e, page as number)}
             disabled={loading}
             className="h-9 w-9 p-0"
           >
             {page}
           </Button>
         )
-      ))}
+      )}
 
       <Button
+        type="button"
         variant="outline"
         size="sm"
-        onClick={() => onPageChange(currentPage + 1)}
+        onClick={(e) => handleChangePage(e, currentPage + 1)}
         disabled={currentPage >= totalPages || loading}
         className="h-9 w-9 p-0"
       >
         <ChevronRight className="h-4 w-4" />
+      </Button>
+
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={(e) => handleChangePage(e, Math.min(totalPages, currentPage + step))}
+        disabled={currentPage >= totalPages || loading}
+        className="h-9 w-9 p-0"
+      >
+        <ChevronsRight className="h-4 w-4" />
       </Button>
     </div>
   );
