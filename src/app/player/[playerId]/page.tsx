@@ -95,13 +95,17 @@ const mergedChartData = useMemo(() => {
   }, []);
   // OPCIONAL: ordenar por data caso venha desordenado
 }, [chartData, selectedChart]);
+
   // Funções utilitárias (pode mover para utils/format.ts se crescer)
-  const formatNumber = (num: number): string => {
-    if (num >= 1e9) return (num / 1e9).toFixed(1) + 'B';
-    if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
-    if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K';
-    return num.toString();
-  };
+const formatNumber = (num: number): string => {
+  const sign = num < 0 ? '-' : '';
+  const abs = Math.abs(num);
+
+  if (abs >= 1e9) return sign + (abs / 1e9).toFixed(1) + 'B';
+  if (abs >= 1e6) return sign + (abs / 1e6).toFixed(1) + 'M';
+  if (abs >= 1e3) return sign + (abs / 1e3).toFixed(1) + 'K';
+  return sign + abs.toString();
+};
 
   const formatDelta = (delta: number, showSign: boolean = true): string => {
     const absDelta = Math.abs(delta);
