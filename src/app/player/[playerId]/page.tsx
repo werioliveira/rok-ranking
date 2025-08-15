@@ -69,7 +69,32 @@ const PlayerDetailPage = () => {
     chartData,
     killsComparisonData
   } = usePlayerHistoryAnalytics(playerData, dateFilter, startDate, endDate);
+// Remove datas duplicadas (ex: duas entradas "2024-07-15")
+const mergedChartData = useMemo(() => {
+  return chartData.reduce((acc: typeof chartData, current) => {
+    const existingIndex = acc.findIndex(item => item.date === current.date);
 
+    if (existingIndex === -1) {
+      // Se ainda não tem esse dia, adiciona
+      acc.push({ ...current });
+    } else {
+      // Se já existe, mesclar — aqui optei por pegar o MAIOR valor do dia
+      acc[existingIndex][selectedChart] = Math.max(
+        acc[existingIndex][selectedChart],
+        current[selectedChart]
+      );
+
+      // se usar periodComparison: também mescla os campos XYZDelta, etc
+      Object.keys(current).forEach((key) => {
+        if (key !== 'date' && key !== selectedChart) {
+          acc[existingIndex][key] = current[key];
+        }
+      });
+    }
+    return acc;
+  }, []);
+  // OPCIONAL: ordenar por data caso venha desordenado
+}, [chartData, selectedChart]);
   // Funções utilitárias (pode mover para utils/format.ts se crescer)
   const formatNumber = (num: number): string => {
     if (num >= 1e9) return (num / 1e9).toFixed(1) + 'B';
@@ -423,7 +448,7 @@ return (
       {chartData.length > 0 ? (
         <ResponsiveContainer width="100%" height="100%">
           {periodComparison ? (
-            <AreaChart data={chartData}>
+            <AreaChart data={mergedChartData}>
               <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
               <XAxis 
                 dataKey="date" 
@@ -431,7 +456,7 @@ return (
                 tick={{ fontSize: 12 }}
               />
               <YAxis 
-                tickFormatter={formatNumber}
+                tickFormatter={(value) => formatNumber(Number(value))}
                 className="text-xs"
                 tick={{ fontSize: 12 }}
               />
@@ -465,7 +490,7 @@ return (
               />
             </AreaChart>
           ) : (
-            <LineChart data={chartData}>
+            <LineChart data={mergedChartData}>
               <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
               <XAxis 
                 dataKey="date" 
@@ -473,7 +498,7 @@ return (
                 tick={{ fontSize: 12 }}
               />
               <YAxis 
-                tickFormatter={formatNumber}
+                tickFormatter={(value) => formatNumber(Number(value))}
                 className="text-xs"
                 tick={{ fontSize: 12 }}
               />
