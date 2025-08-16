@@ -6,7 +6,7 @@ const prisma = new PrismaClient()
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
-    
+
     // Parâmetros de paginação
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '12')
@@ -14,23 +14,29 @@ export async function GET(request: Request) {
     const offset = (page - 1) * limit
     const sortBy = searchParams.get('sortBy') || 'Power'
 
-    // Mapear campos de ordenação para colunas do banco (considerando que podem ser diferentes)
+    // Campos que o usuário pode ordenar
     const sortFieldMap: Record<string, string> = {
-      'Power': 'power',
-      'Killpoints': 'killpoints', 
+      Power: 'power',
+      Killpoints: 'killpoints',
       'Total Kills': 'totalKills',
       'T45 Kills': 't45Kills',
-      'Rss Gathered': 'CAST(rssGathered AS UNSIGNED)' // Para ordenar numericamente se for string
+      'Rss Gathered': 'CAST(rssGathered AS UNSIGNED)',
+      'Killpoints Gained': `(
+        SELECT latest.killpoints - earliest.killpoints
+        FROM 
+          (SELECT killpoints FROM PlayerSnapshot ps1 WHERE ps1.playerId = PlayerSnapshot.playerId ORDER BY ps1.createdAt ASC LIMIT 1) AS earliest,
+          (SELECT killpoints FROM PlayerSnapshot ps2 WHERE ps2.playerId = PlayerSnapshot.playerId ORDER BY ps2.createdAt DESC LIMIT 1) AS latest
+      )`
     }
 
     const orderByField = sortFieldMap[sortBy] || 'power'
 
-    // Construir condição de busca
-    const searchCondition = searchTerm.trim() 
+    // Condição de busca
+    const searchCondition = searchTerm.trim()
       ? `AND name LIKE '%${searchTerm.trim().replace(/'/g, "''")}%'`
       : ''
 
-    // Primeiro, contar o total de jogadores únicos (com filtro de busca se aplicável)
+    // Total de players únicos
     const totalPlayersQuery = `
       SELECT COUNT(DISTINCT playerId) as count
       FROM PlayerSnapshot
@@ -41,12 +47,11 @@ export async function GET(request: Request) {
       )
       ${searchCondition}
     `
-    
     const totalPlayers = await prisma.$queryRawUnsafe<{ count: BigInt }[]>(totalPlayersQuery)
     const total = Number(totalPlayers[0].count)
     const totalPages = Math.ceil(total / limit)
 
-    // Buscar os snapshots mais recentes com paginação, ordenação e busca
+    // Snapshot mais recente + ordenação
     const playersQuery = `
       SELECT *
       FROM PlayerSnapshot
@@ -64,8 +69,8 @@ export async function GET(request: Request) {
 
     const serialized = latestSnapshots.map(player => ({
       ...player,
-      rssGathered: (player.rssGathered !== null && player.rssGathered !== undefined) ? player.rssGathered.toString() : "0",
-      rssAssist: (player.rssAssist !== null && player.rssAssist !== undefined) ? player.rssAssist.toString() : "0",
+      rssGathered: player.rssGathered != null ? player.rssGathered.toString() : "0",
+      rssAssist: player.rssAssist != null ? player.rssAssist.toString() : "0",
     }))
 
     return NextResponse.json({

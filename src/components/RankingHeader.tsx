@@ -1,8 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { SortField } from "@/types/player";
 import { Crown, Sword, Trophy, BarChart3, Coins, Loader2 } from "lucide-react";
-import rokBanner from "../../public/rok-banner.jpg";
-
 interface RankingHeaderProps {
   sortField: SortField;
   onSortChange: (field: SortField) => void;
@@ -15,6 +13,7 @@ const sortOptions: { field: SortField; label: string; icon: React.ReactNode }[] 
   { field: 'Total Kills', label: 'Total Kills', icon: <Trophy className="w-4 h-4" /> },
   { field: 'T45 Kills', label: 'T4/T5 Kills', icon: <BarChart3 className="w-4 h-4" /> },
   { field: 'Rss Gathered', label: 'RSS Gathered', icon: <Coins className="w-4 h-4" /> },
+  { field: 'Killpoints Gained', label: 'Killpoints Gained', icon: <Sword className="w-4 h-4" /> },
 ];
 
 export const RankingHeader = ({ sortField, onSortChange, loading = false }: RankingHeaderProps) => {
