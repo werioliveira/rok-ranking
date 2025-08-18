@@ -7,14 +7,12 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
 
-    // Parâmetros de paginação
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '12')
     const searchTerm = searchParams.get('search') || ''
     const offset = (page - 1) * limit
     const sortBy = searchParams.get('sortBy') || 'Power'
 
-    // Campos que o usuário pode ordenar
     const sortFieldMap: Record<string, string> = {
       Power: 'power',
       Killpoints: 'killpoints',
@@ -30,13 +28,10 @@ export async function GET(request: Request) {
     }
 
     const orderByField = sortFieldMap[sortBy] || 'power'
-
-    // Condição de busca
     const searchCondition = searchTerm.trim()
       ? `AND name LIKE '%${searchTerm.trim().replace(/'/g, "''")}%'`
       : ''
 
-    // Total de players únicos
     const totalPlayersQuery = `
       SELECT COUNT(DISTINCT playerId) as count
       FROM PlayerSnapshot
@@ -51,7 +46,12 @@ export async function GET(request: Request) {
     const total = Number(totalPlayers[0].count)
     const totalPages = Math.ceil(total / limit)
 
-    // Snapshot mais recente + ordenação
+    // pega o snapshot mais recente global
+    const lastUpdatedResult = await prisma.$queryRawUnsafe<{ last: any }[]>(`
+      SELECT MAX(createdAt) as last FROM PlayerSnapshot
+    `)
+    const lastUpdated = lastUpdatedResult[0]?.last || null
+
     const playersQuery = `
       SELECT *
       FROM PlayerSnapshot
@@ -67,10 +67,23 @@ export async function GET(request: Request) {
 
     const latestSnapshots = await prisma.$queryRawUnsafe<any[]>(playersQuery)
 
+    // converte todos os BigInt
     const serialized = latestSnapshots.map(player => ({
       ...player,
-      rssGathered: player.rssGathered != null ? player.rssGathered.toString() : "0",
-      rssAssist: player.rssAssist != null ? player.rssAssist.toString() : "0",
+      power: player.power?.toString(),
+      killpoints: player.killpoints?.toString(),
+      totalKills: player.totalKills?.toString(),
+      t45Kills: player.t45Kills?.toString(),
+      rssGathered: player.rssGathered?.toString(),
+      rssAssist: player.rssAssist?.toString(),
+      t1Kills: player.t1Kills?.toString(),
+      t2Kills: player.t2Kills?.toString(),
+      t3Kills: player.t3Kills?.toString(),
+      t4Kills: player.t4Kills?.toString(),
+      t5Kills: player.t5Kills?.toString(),
+      deads: player.deads?.toString(),
+      helps: player.helps?.toString(),
+      lastUpdated: player.createdAt
     }))
 
     return NextResponse.json({
@@ -82,8 +95,10 @@ export async function GET(request: Request) {
         itemsPerPage: limit,
         hasNext: page < totalPages,
         hasPrev: page > 1
-      }
+      },
+      lastUpdated: serialized[0]?.lastUpdated || lastUpdated
     })
+
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: "Erro ao buscar jogadores" }, { status: 500 })
