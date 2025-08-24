@@ -26,6 +26,84 @@ function parseLocalEnd(dateStr: string | undefined | null): Date | null {
   return new Date(y, m - 1, d, 23, 59, 59, 999);
 }
 
+// Função para encontrar o snapshot mais próximo de uma data
+function findClosestSnapshot(targetDate: Date, snapshots: PlayerSnapshot[]): PlayerSnapshot | null {
+  if (!snapshots || snapshots.length === 0) return null;
+  
+  const target = targetDate.getTime();
+  
+  let closest = snapshots[0];
+  let smallestDiff = Math.abs(new Date(closest.createdAt).getTime() - target);
+  
+  for (let i = 1; i < snapshots.length; i++) {
+    const diff = Math.abs(new Date(snapshots[i].createdAt).getTime() - target);
+    if (diff < smallestDiff) {
+      smallestDiff = diff;
+      closest = snapshots[i];
+    }
+  }
+  
+  return closest;
+}
+
+// Função para filtrar dados por período com fallback para dados próximos
+function getFilteredDataWithFallback(snapshots: PlayerSnapshot[], start: Date, end: Date): PlayerSnapshot[] {
+  if (!snapshots || snapshots.length === 0) return [];
+  
+  // Primeiro, tenta encontrar dados exatos no range
+  let filteredData = snapshots.filter(snapshot => {
+    const snapshotDate = new Date(snapshot.createdAt);
+    return snapshotDate >= start && snapshotDate <= end;
+  });
+  
+  // Se não encontrou dados exatos, busca os mais próximos
+  if (filteredData.length === 0) {
+    const startSnapshot = findClosestSnapshot(start, snapshots);
+    const endSnapshot = findClosestSnapshot(end, snapshots);
+    
+    if (startSnapshot && endSnapshot) {
+      // Se são o mesmo snapshot, retorna apenas um
+      if (startSnapshot.createdAt === endSnapshot.createdAt) {
+        filteredData = [startSnapshot];
+      } else {
+        // Retorna os dois pontos mais próximos
+        filteredData = [startSnapshot, endSnapshot];
+        
+        // Remove duplicatas e ordena por data
+        filteredData = filteredData
+          .filter((snapshot, index, self) => 
+            index === self.findIndex(s => s.createdAt === snapshot.createdAt)
+          )
+          .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      }
+    }
+  }
+  
+  // Se ainda não tem dados suficientes, pega pelo menos os 2 snapshots mais próximos
+  if (filteredData.length < 2 && snapshots.length >= 2) {
+    // Encontra os snapshots mais próximos ao período solicitado
+    const allWithDistance = snapshots.map(snapshot => ({
+      snapshot,
+      distance: Math.min(
+        Math.abs(new Date(snapshot.createdAt).getTime() - start.getTime()),
+        Math.abs(new Date(snapshot.createdAt).getTime() - end.getTime())
+      )
+    }));
+    
+    // Ordena por proximidade e pega os 2 mais próximos se ainda não temos dados suficientes
+    allWithDistance.sort((a, b) => a.distance - b.distance);
+    const closestSnapshots = allWithDistance.slice(0, Math.max(2, filteredData.length)).map(item => item.snapshot);
+    
+    // Remove duplicatas que já podem estar em filteredData
+    const existingIds = new Set(filteredData.map(s => s.createdAt));
+    const newSnapshots = closestSnapshots.filter(s => !existingIds.has(s.createdAt));
+    
+    filteredData = [...filteredData, ...newSnapshots];
+  }
+  
+  return filteredData.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+}
+
 export const usePlayerHistoryAnalytics = (
   playerData: PlayerDetailResponse | null,
   dateFilter: DateFilter,
@@ -35,7 +113,7 @@ export const usePlayerHistoryAnalytics = (
   // Helper para converter BigInt ou number para number seguro
   const toNum = (val: any) => Number(val ?? 0);
 
-  // Filtrar snapshots
+  // Filtrar snapshots com lógica melhorada
   const filteredSnapshots = useMemo(() => {
     if (!playerData?.history) return [];
 
@@ -46,10 +124,9 @@ export const usePlayerHistoryAnalytics = (
     if (dateFilter === 'custom' && startDate && endDate) {
       const start = parseLocalStart(startDate)!;
       const end = parseLocalEnd(endDate)!;
-      return sortedHistory.filter(snapshot => {
-        const snapDate = new Date(snapshot.createdAt);
-        return snapDate >= start && snapDate <= end;
-      });
+      
+      // Usa a função melhorada que busca dados próximos se necessário
+      return getFilteredDataWithFallback(sortedHistory, start, end);
     }
 
     if (dateFilter === 'all') return sortedHistory;
@@ -59,8 +136,51 @@ export const usePlayerHistoryAnalytics = (
     const now = new Date();
     const filterDate = new Date(now.getTime() - daysToFilter * 24 * 60 * 60 * 1000);
 
-    return sortedHistory.filter(snapshot => new Date(snapshot.createdAt) >= filterDate);
+    const filtered = sortedHistory.filter(snapshot => new Date(snapshot.createdAt) >= filterDate);
+    
+    // Para filtros predefinidos, se não há dados no período, também busca os mais próximos
+    if (filtered.length === 0) {
+      return getFilteredDataWithFallback(sortedHistory, filterDate, now);
+    }
+    
+    return filtered;
   }, [playerData?.history, dateFilter, startDate, endDate]);
+
+  // Informação sobre o período de dados encontrado
+  const dataRangeInfo = useMemo(() => {
+    if (!filteredSnapshots || filteredSnapshots.length === 0) {
+      return "No data available";
+    }
+    
+    const actualStart = filteredSnapshots[0].createdAt;
+    const actualEnd = filteredSnapshots[filteredSnapshots.length - 1].createdAt;
+    
+    const formatDate = (dateStr: string) => new Date(dateStr).toLocaleDateString('pt-BR');
+    
+    if (filteredSnapshots.length === 1) {
+      return `Snapshot: ${formatDate(actualStart)}`;
+    }
+    
+    if (dateFilter !== 'custom' || !startDate || !endDate) {
+      return `Períod: ${formatDate(actualStart)} - ${formatDate(actualEnd)}`;
+    }
+    
+    // Para custom, verifica se os dados são exatos ou aproximados
+    const requestedStart = parseLocalStart(startDate)!;
+    const requestedEnd = parseLocalEnd(endDate)!;
+    const actualStartDate = new Date(actualStart);
+    const actualEndDate = new Date(actualEnd);
+    
+    // Verifica se os dados são exatamente do período solicitado (com tolerância de 1 dia)
+    const startDiff = Math.abs(actualStartDate.getTime() - requestedStart.getTime()) / (1000 * 60 * 60 * 24);
+    const endDiff = Math.abs(actualEndDate.getTime() - requestedEnd.getTime()) / (1000 * 60 * 60 * 24);
+    
+    if (startDiff <= 1 && endDiff <= 1) {
+      return `Período: ${formatDate(actualStart)} - ${formatDate(actualEnd)}`;
+    }
+    
+    return `Dados próximos: ${formatDate(actualStart)} - ${formatDate(actualEnd)}`;
+  }, [filteredSnapshots, dateFilter, startDate, endDate]);
 
   // Comparação de período
   const periodComparison = useMemo(() => {
@@ -89,7 +209,7 @@ export const usePlayerHistoryAnalytics = (
       power: toNum(last?.power) - toNum(first?.power),
       totalKills: toNum(last?.totalKills) - toNum(first?.totalKills),
       killpoints: toNum(last?.killpoints) - toNum(first?.killpoints),
-      deads: toNum(last?.deads) - toNum(first?.deads), // NOVO
+      deads: toNum(last?.deads) - toNum(first?.deads),
       t1Kills: toNum(last?.t1Kills) - toNum(first?.t1Kills),
       t2Kills: toNum(last?.t2Kills) - toNum(first?.t2Kills),
       t3Kills: toNum(last?.t3Kills) - toNum(first?.t3Kills),
@@ -128,11 +248,11 @@ export const usePlayerHistoryAnalytics = (
         power: toNum(snapshot.power),
         totalKills: toNum(snapshot.totalKills),
         killpoints: toNum(snapshot.killpoints),
-        deads: toNum(snapshot.deads), // NOVO
+        deads: toNum(snapshot.deads),
         powerDelta: toNum(snapshot.power) - toNum(firstSnapshot?.power),
         totalKillsDelta: toNum(snapshot.totalKills) - toNum(firstSnapshot?.totalKills),
         killpointsDelta: toNum(snapshot.killpoints) - toNum(firstSnapshot?.killpoints),
-        deadsDelta: toNum(snapshot.deads) - toNum(firstSnapshot?.deads), // NOVO
+        deadsDelta: toNum(snapshot.deads) - toNum(firstSnapshot?.deads),
         fullDate: snapDate.toLocaleDateString('pt-BR')
       };
     });
@@ -161,7 +281,8 @@ export const usePlayerHistoryAnalytics = (
     filteredCurrentData,
     chartData,
     killsComparisonData,
-    totalDeads: toNum(filteredCurrentData?.deads), // Mortos atuais
-    deadsDelta: periodComparison?.deltas.deads ?? 0 // Mortos no período
+    totalDeads: toNum(filteredCurrentData?.deads),
+    deadsDelta: periodComparison?.deltas.deads ?? 0,
+    dataRangeInfo // Nova propriedade com informações sobre o período
   };
 };

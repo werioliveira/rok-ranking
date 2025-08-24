@@ -67,7 +67,8 @@ const PlayerDetailPage = () => {
     periodComparison,
     filteredCurrentData,
     chartData,
-    killsComparisonData
+    killsComparisonData,
+    dataRangeInfo // <- Nova propriedade
   } = usePlayerHistoryAnalytics(playerData, dateFilter, startDate, endDate);
 // Remove datas duplicadas (ex: duas entradas "2024-07-15")
 const mergedChartData = useMemo(() => {
@@ -434,7 +435,7 @@ return (
     )}
 
     {/* Custom Date Range Display */}
-    {dateFilter === 'custom' && getDateRangeText() && (
+    {/* {dateFilter === 'custom' && getDateRangeText() && (
       <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
         <Calendar className="w-4 h-4" />
         <span>Period: {getDateRangeText()}</span>
@@ -445,7 +446,14 @@ return (
           <X className="w-3 h-3" />
         </button>
       </div>
-    )}
+    )} */}
+    {/* Data Range Info */}
+{dataRangeInfo && (
+  <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
+    <Calendar className="w-4 h-4" />
+    <span>{dataRangeInfo}</span>
+  </div>
+)}
 
     {/* Chart */}
     <div className="h-80">
