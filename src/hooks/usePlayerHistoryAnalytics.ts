@@ -162,7 +162,7 @@ export const usePlayerHistoryAnalytics = (
     }
     
     if (dateFilter !== 'custom' || !startDate || !endDate) {
-      return `Períod: ${formatDate(actualStart)} - ${formatDate(actualEnd)}`;
+      return `Period: ${formatDate(actualStart)} - ${formatDate(actualEnd)}`;
     }
     
     // Para custom, verifica se os dados são exatos ou aproximados
@@ -176,10 +176,10 @@ export const usePlayerHistoryAnalytics = (
     const endDiff = Math.abs(actualEndDate.getTime() - requestedEnd.getTime()) / (1000 * 60 * 60 * 24);
     
     if (startDiff <= 1 && endDiff <= 1) {
-      return `Período: ${formatDate(actualStart)} - ${formatDate(actualEnd)}`;
+      return `Period: ${formatDate(actualStart)} - ${formatDate(actualEnd)}`;
     }
     
-    return `Dados próximos: ${formatDate(actualStart)} - ${formatDate(actualEnd)}`;
+    return `Data searched: ${formatDate(actualStart)} - ${formatDate(actualEnd)}`;
   }, [filteredSnapshots, dateFilter, startDate, endDate]);
 
   // Comparação de período
