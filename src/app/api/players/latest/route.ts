@@ -1,90 +1,185 @@
-import { PrismaClient } from "@prisma/client"
-import { NextResponse } from "next/server"
+import { PrismaClient } from "@prisma/client";
+import { NextResponse } from "next/server";
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url)
+    const { searchParams } = new URL(request.url);
 
-    const page = parseInt(searchParams.get('page') || '1')
-    const limit = parseInt(searchParams.get('limit') || '12')
-    const searchTerm = searchParams.get('search') || ''
-    const offset = (page - 1) * limit
-    const sortBy = searchParams.get('sortBy') || 'Power'
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const limit = parseInt(searchParams.get("limit") || "12", 10);
+    const sortBy = searchParams.get("sortBy") || "Power";
+    const rawSearch = searchParams.get("search") || "";
+    const search = rawSearch.trim();
+    const offset = (page - 1) * limit;
 
-    const sortFieldMap: Record<string, string> = {
-      Power: 'power',
-      Killpoints: 'killpoints',
-      'Total Kills': 'totalKills',
-      'T45 Kills': 't45Kills',
-      'Rss Gathered': 'CAST(rssGathered AS UNSIGNED)',
-      'Killpoints Gained': `(
-        SELECT latest.killpoints - earliest.killpoints
-        FROM 
-          (SELECT killpoints FROM PlayerSnapshot ps1 WHERE ps1.playerId = PlayerSnapshot.playerId ORDER BY ps1.createdAt ASC LIMIT 1) AS earliest,
-          (SELECT killpoints FROM PlayerSnapshot ps2 WHERE ps2.playerId = PlayerSnapshot.playerId ORDER BY ps2.createdAt DESC LIMIT 1) AS latest
-      )`
-    }
+    // Mapeia os rótulos do frontend para campos/expressões válidas
+    const sortFieldMap: Record<string, "power" | "killpoints" | "totalKills" | "t45Kills" | "rssGathered" | "killpointsGained"> = {
+      Power: "power",
+      Killpoints: "killpoints",
+      "Total Kills": "totalKills",
+      "T45 Kills": "t45Kills",
+      "Rss Gathered": "rssGathered",
+      "Killpoints Gained": "killpointsGained",
+    };
 
-    const orderByField = sortFieldMap[sortBy] || 'power'
-    const searchCondition = searchTerm.trim()
-      ? `AND name LIKE '%${searchTerm.trim().replace(/'/g, "''")}%'`
-      : ''
+    const sortKey = sortFieldMap[sortBy] || "power";
 
+    // Como precisamos usar a expressão de ordenação tanto no ROW_NUMBER()
+    // (dentro do CTE) quanto no ORDER BY final, montamos duas versões:
+    // - uma referenciando o alias "j." (dentro do CTE ranked)
+    // - outra referenciando o alias "ranked." (SELECT final)
+    const orderExprForJ =
+      sortKey === "rssGathered"
+        ? "CAST(j.rssGathered AS INTEGER)"
+        : sortKey === "killpointsGained"
+          ? "COALESCE(j.killpointsGained, 0)"
+          : `j.${sortKey}`;
+
+    const orderExprForRanked =
+      sortKey === "rssGathered"
+        ? "CAST(ranked.rssGathered AS INTEGER)"
+        : sortKey === "killpointsGained"
+          ? "COALESCE(ranked.killpointsGained, 0)"
+          : `ranked.${sortKey}`;
+
+    // Escapa aspas simples no search para evitar quebrar a string
+    const escapedSearch = search.replace(/'/g, "''");
+    const searchWhereRanked = search ? `WHERE ranked.name LIKE '%${escapedSearch}%'` : "";
+
+    // -------- COUNT TOTAL (com mesmo filtro de nome) ----------
     const totalPlayersQuery = `
-      SELECT COUNT(DISTINCT playerId) as count
-      FROM PlayerSnapshot
-      WHERE (playerId, createdAt) IN (
-        SELECT playerId, MAX(createdAt)
-        FROM PlayerSnapshot
-        GROUP BY playerId
+      WITH latest AS (
+        SELECT ps.*
+        FROM PlayerSnapshot ps
+        WHERE (ps.playerId, ps.createdAt) IN (
+          SELECT playerId, MAX(createdAt)
+          FROM PlayerSnapshot
+          GROUP BY playerId
+        )
+      ),
+      gains AS (
+        -- calcula killpointsGained por player: latest - earliest
+        SELECT
+          p.playerId,
+          (
+            (SELECT killpoints FROM PlayerSnapshot WHERE playerId = p.playerId ORDER BY createdAt DESC LIMIT 1)
+            -
+            (SELECT killpoints FROM PlayerSnapshot WHERE playerId = p.playerId ORDER BY createdAt ASC LIMIT 1)
+          ) AS killpointsGained
+        FROM (SELECT DISTINCT playerId FROM PlayerSnapshot) p
+      ),
+      joined AS (
+        SELECT l.*, COALESCE(g.killpointsGained, 0) AS killpointsGained
+        FROM latest l
+        LEFT JOIN gains g ON g.playerId = l.playerId
+      ),
+      ranked AS (
+        SELECT
+          j.*,
+          ROW_NUMBER() OVER (ORDER BY ${orderExprForJ} DESC) AS rank
+        FROM joined j
       )
-      ${searchCondition}
-    `
-    const totalPlayers = await prisma.$queryRawUnsafe<{ count: BigInt }[]>(totalPlayersQuery)
-    const total = Number(totalPlayers[0].count)
-    const totalPages = Math.ceil(total / limit)
+      SELECT COUNT(*) AS count
+      FROM ranked
+      ${searchWhereRanked};
+    `;
 
-    // pega o snapshot mais recente global
-    const lastUpdatedResult = await prisma.$queryRawUnsafe<{ last: any }[]>(`
-      SELECT MAX(createdAt) as last FROM PlayerSnapshot
-    `)
-    const lastUpdated = lastUpdatedResult[0]?.last || null
+    const totalPlayers = await prisma.$queryRawUnsafe<any[]>(totalPlayersQuery);
+    const total = Number(totalPlayers?.[0]?.count || 0);
+    const totalPages = Math.max(1, Math.ceil(total / limit));
 
+    // -------- LAST UPDATED (global) ----------
+    const lastUpdatedResult = await prisma.$queryRawUnsafe<{ last: any }[]>(
+      `SELECT MAX(createdAt) as last FROM PlayerSnapshot;`
+    );
+    const lastUpdated = lastUpdatedResult?.[0]?.last || null;
+
+    // -------- QUERY PRINCIPAL (dados + rank + paginação) ----------
     const playersQuery = `
-      SELECT *
-      FROM PlayerSnapshot
-      WHERE (playerId, createdAt) IN (
-        SELECT playerId, MAX(createdAt)
-        FROM PlayerSnapshot
-        GROUP BY playerId
+      WITH latest AS (
+        SELECT ps.*
+        FROM PlayerSnapshot ps
+        WHERE (ps.playerId, ps.createdAt) IN (
+          SELECT playerId, MAX(createdAt)
+          FROM PlayerSnapshot
+          GROUP BY playerId
+        )
+      ),
+      gains AS (
+        SELECT
+          p.playerId,
+          (
+            (SELECT killpoints FROM PlayerSnapshot WHERE playerId = p.playerId ORDER BY createdAt DESC LIMIT 1)
+            -
+            (SELECT killpoints FROM PlayerSnapshot WHERE playerId = p.playerId ORDER BY createdAt ASC LIMIT 1)
+          ) AS killpointsGained
+        FROM (SELECT DISTINCT playerId FROM PlayerSnapshot) p
+      ),
+      joined AS (
+        SELECT l.*, COALESCE(g.killpointsGained, 0) AS killpointsGained
+        FROM latest l
+        LEFT JOIN gains g ON g.playerId = l.playerId
+      ),
+      ranked AS (
+        SELECT
+          j.*,
+          ROW_NUMBER() OVER (ORDER BY ${orderExprForJ} DESC) AS rank
+        FROM joined j
       )
-      ${searchCondition}
-      ORDER BY ${orderByField} DESC
-      LIMIT ${limit} OFFSET ${offset}
-    `
+      SELECT
+        ranked.playerId,
+        ranked.name,
+        ranked.alliance,
+        ranked.power,
+        ranked.killpoints,
+        ranked.totalKills,
+        ranked.t45Kills,
+        ranked.rssGathered,
+        ranked.rssAssist,
+        ranked.t1Kills,
+        ranked.t2Kills,
+        ranked.t3Kills,
+        ranked.t4Kills,
+        ranked.t5Kills,
+        ranked.deads,
+        ranked.helps,
+        ranked.createdAt,
+        ranked.rank,
+        ranked.killpointsGained
+      FROM ranked
+      ${searchWhereRanked}
+      ORDER BY ${orderExprForRanked} DESC
+      LIMIT ${limit} OFFSET ${offset};
+    `;
 
-    const latestSnapshots = await prisma.$queryRawUnsafe<any[]>(playersQuery)
+    const latestSnapshots = await prisma.$queryRawUnsafe<any[]>(playersQuery);
 
-    // converte todos os BigInt
-    const serialized = latestSnapshots.map(player => ({
-      ...player,
-      power: player.power?.toString(),
-      killpoints: player.killpoints?.toString(),
-      totalKills: player.totalKills?.toString(),
-      t45Kills: player.t45Kills?.toString(),
-      rssGathered: player.rssGathered?.toString(),
-      rssAssist: player.rssAssist?.toString(),
-      t1Kills: player.t1Kills?.toString(),
-      t2Kills: player.t2Kills?.toString(),
-      t3Kills: player.t3Kills?.toString(),
-      t4Kills: player.t4Kills?.toString(),
-      t5Kills: player.t5Kills?.toString(),
-      deads: player.deads?.toString(),
-      helps: player.helps?.toString(),
-      lastUpdated: player.createdAt
-    }))
+    // -------- SERIALIZAÇÃO (BigInt -> string) ----------
+    const toStr = (v: any) =>
+      typeof v === "bigint" ? v.toString() : v != null ? String(v) : null;
+
+    const serialized = latestSnapshots.map((p) => ({
+      ...p,
+      rank: Number(p.rank),
+      power: toStr(p.power),
+      killpoints: toStr(p.killpoints),
+      killpointsGained: toStr(p.killpointsGained) || "0",
+      totalKills: toStr(p.totalKills),
+      t45Kills: toStr(p.t45Kills),
+      rssGathered: toStr(p.rssGathered),
+      rssAssist: toStr(p.rssAssist),
+      t1Kills: toStr(p.t1Kills),
+      t2Kills: toStr(p.t2Kills),
+      t3Kills: toStr(p.t3Kills),
+      t4Kills: toStr(p.t4Kills),
+      t5Kills: toStr(p.t5Kills),
+      deads: toStr(p.deads),
+      helps: toStr(p.helps),
+      alliance: toStr(p.alliance),
+      lastUpdated: p.createdAt,
+    }));
 
     return NextResponse.json({
       data: serialized,
@@ -94,13 +189,12 @@ export async function GET(request: Request) {
         totalItems: total,
         itemsPerPage: limit,
         hasNext: page < totalPages,
-        hasPrev: page > 1
+        hasPrev: page > 1,
       },
-      lastUpdated: serialized[0]?.lastUpdated || lastUpdated
-    })
-
+      lastUpdated: serialized[0]?.lastUpdated || lastUpdated,
+    });
   } catch (error) {
-    console.error(error)
-    return NextResponse.json({ error: "Erro ao buscar jogadores" }, { status: 500 })
+    console.error(error);
+    return NextResponse.json({ error: "Erro ao buscar jogadores" }, { status: 500 });
   }
 }

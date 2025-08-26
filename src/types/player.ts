@@ -6,7 +6,9 @@ export interface Player {
   playerId: number
   name: string
   power: number
+  rank?: number // Nova propriedade
   killpoints: number
+  killpointsGained: string; // Nova propriedade
   deads: number
   t1Kills: number
   t2Kills: number
@@ -21,7 +23,6 @@ export interface Player {
   helps: number
   alliance: string
 }
-
 // Adicione ao seu types/player.ts existente
 export interface PlayerResponse extends PaginatedResponse<Player> {}
 export type SortField = 'Power' | 'Killpoints' | 'Total Kills' | 'T45 Kills' | 'Rss Gathered' | 'Killpoints Gained';

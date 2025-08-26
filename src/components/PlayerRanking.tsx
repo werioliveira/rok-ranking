@@ -7,7 +7,6 @@ import { PlayerCard } from "./PlayerCard";
 import { RankingHeader } from "./RankingHeader";
 import { PaginationPages } from "./PaginationPages";
 import { Loader2, Search, X } from "lucide-react";
-import DonationButton from "./DonationButton";
 
 export const PlayerRanking = () => {
   const [players, setPlayers] = useState<Player[]>([]);
@@ -121,13 +120,13 @@ export const PlayerRanking = () => {
       <div className="container mx-auto px-4 py-8">
         <RankingHeader sortField={sortField} onSortChange={setSortField} loading={loading} />
         {/* Última atualização */}
-{lastUpdated && (
-  <div className="flex justify-center mb-6">
-    <span className="px-4 py-2 border-2 border-yellow-400 text-yellow-400 bg-gray-900 rounded-lg font-semibold text-sm shadow-md shadow-yellow-500/50 animate-pulse">
-      ⏱ Last update: {new Date(lastUpdated).toLocaleDateString('en-GB')}
-    </span>
-  </div>
-)}
+        {lastUpdated && (
+          <div className="flex justify-center mb-6">
+            <span className="px-4 py-2 border-2 border-yellow-400 text-yellow-400 bg-gray-900 rounded-lg font-semibold text-sm shadow-md shadow-yellow-500/50 animate-pulse">
+              ⏱ Last update: {new Date(lastUpdated).toLocaleDateString('en-GB')}
+            </span>
+          </div>
+        )}
         {/* Campo de Busca */}
         <div className="mb-6">
           <div className="relative max-w-md mx-auto">
@@ -187,7 +186,7 @@ export const PlayerRanking = () => {
               <PlayerCard 
                 key={`${player.playerId}-${currentPage}-${sortField}-${searchTerm}`} 
                 player={player} 
-                rank={getGlobalRank(index)} 
+                rank={player.rank}
               />
             ))}
           </div>

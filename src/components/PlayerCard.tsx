@@ -1,7 +1,7 @@
 import { Player } from "@/types/player";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Crown, Sword, Shield, Trophy, Users, ArrowRight } from "lucide-react";
+import { Crown, Sword, Shield, Trophy, Users, ArrowRight, TrendingUp } from "lucide-react";
 import Link from "next/link";
 
 interface PlayerCardProps {
@@ -44,6 +44,9 @@ const getRankBadgeVariant = (rank: number) => {
 };
 
 export const PlayerCard = ({ player, rank }: PlayerCardProps) => {
+  // Verifica se existe killpointsGained no player
+  const killpointsGained = player.killpointsGained ? parseInt(player.killpointsGained) : 0;
+  
   return (
     <Card className="player-card group relative overflow-hidden border-border/50 bg-card/80 backdrop-blur-sm hover:bg-card/90 transition-royal">
       {/* Rank highlight for top 3 */}
@@ -63,6 +66,8 @@ export const PlayerCard = ({ player, rank }: PlayerCardProps) => {
             </Badge>
             {getRankIcon(rank)}
           </div>
+
+
           <div className="text-right">
             <Badge variant="alliance" className="text-xs">
               {player.alliance}
@@ -86,6 +91,8 @@ export const PlayerCard = ({ player, rank }: PlayerCardProps) => {
 
           <p className="text-sm text-muted-foreground">ID: {player.playerId}</p>
         </div>
+
+
 
         {/* Main stats grid */}
         <div className="grid grid-cols-2 gap-4">
@@ -146,10 +153,32 @@ export const PlayerCard = ({ player, rank }: PlayerCardProps) => {
             </div>
             <div className="text-center">
               <p className="text-muted-foreground">RSS Assistance</p>
-              <p className="font-semibold text-foreground">{formatNumber(player.rssAssist)}</p>
+              <p className="font-semibull text-foreground">{formatNumber(player.rssAssist)}</p>
             </div>
           </div>
         </div>
+          {/* Killpoints gained indicator - linha simples no bottom */}
+          {player.killpointsGained && (
+            <div className="pt-2 border-t border-border/20">
+              <div className="flex items-center justify-center gap-2 text-xs">
+                <TrendingUp 
+                  className={`w-3 h-3 ${
+                    killpointsGained > 0 ? 'text-green-500' : 
+                    killpointsGained < 0 ? 'text-red-500 rotate-180' : 
+                    'text-muted-foreground'
+                  }`} 
+                />
+                <span className="text-muted-foreground">KP Gained:</span>
+                <span className={`font-semibold ${
+                  killpointsGained > 0 ? 'text-green-500' : 
+                  killpointsGained < 0 ? 'text-red-500' : 
+                  'text-muted-foreground'
+                }`}>
+                  {killpointsGained > 0 ? '+' : ''}{formatNumber(player.killpointsGained)}
+                </span>
+              </div>
+            </div>
+          )}
       </div>
     </Card>
   );
