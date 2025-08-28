@@ -18,6 +18,10 @@ export const PlayerRanking = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  
+  // Novo estado para o filtro de data
+  const [dateRange, setDateRange] = useState<{ startDate: string; endDate: string } | null>(null);
+
   // Debounce para a busca
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -27,16 +31,28 @@ export const PlayerRanking = () => {
     return () => clearTimeout(timer);
   }, [searchInput]);
 
-  const fetchPlayers = useCallback(async (page: number, sort?: SortField, search?: string) => {
+  const fetchPlayers = useCallback(async (
+    page: number, 
+    sort?: SortField, 
+    search?: string, 
+    dateFilter?: { startDate: string; endDate: string } | null
+  ) => {
     setLoading(true);
     try {
       const sortParam = sort || sortField;
       const searchParam = search !== undefined ? search : searchTerm;
+      const dateFilterParam = dateFilter !== undefined ? dateFilter : dateRange;
       
       let url = `/api/players/latest?page=${page}&limit=12&sortBy=${encodeURIComponent(sortParam)}`;
       
       if (searchParam.trim()) {
         url += `&search=${encodeURIComponent(searchParam.trim())}`;
+      }
+      
+      // Adicionar parâmetros de data se houver filtro de data e se for Killpoints Gained
+      if (dateFilterParam && sortParam === 'Killpoints Gained') {
+        url += `&startDate=${encodeURIComponent(dateFilterParam.startDate)}`;
+        url += `&endDate=${encodeURIComponent(dateFilterParam.endDate)}`;
       }
       
       const res = await fetch(url);
@@ -45,7 +61,6 @@ export const PlayerRanking = () => {
         setPlayers(data.data);
         setPagination(data.pagination);
         setLastUpdated(data.lastUpdated || null);
-
       } else {
         console.error("Erro ao buscar jogadores");
       }
@@ -55,10 +70,33 @@ export const PlayerRanking = () => {
       setLoading(false);
       setInitialLoad(false);
     }
-  }, [sortField, searchTerm]);
+  }, [sortField, searchTerm, dateRange]);
+
+  // Handler para mudança do filtro de data
+  const handleDateRangeChange = (range: { startDate: string; endDate: string } | null) => {
+    setDateRange(range);
+    // Se não for Killpoints Gained, limpar o filtro de data
+    if (sortField !== 'Killpoints Gained' && range) {
+      setDateRange(null);
+      return;
+    }
+  };
+function formatDateUTC(dateStr: string) {
+  // dateStr = 'YYYY-MM-DD'
+  const [year, month, day] = dateStr.split("-");
+  return `${day}/${month}/${year.slice(2)}`; // dd/mm/yy
+}
+  // Handler para mudança do campo de ordenação
+  const handleSortFieldChange = (field: SortField) => {
+    setSortField(field);
+    // Se mudou para um campo que não é Killpoints Gained, limpar o filtro de data
+    if (field !== 'Killpoints Gained') {
+      setDateRange(null);
+    }
+  };
 
   useEffect(() => {
-    fetchPlayers(currentPage, sortField, searchTerm);
+    fetchPlayers(currentPage, sortField, searchTerm, dateRange);
   }, [currentPage]);
 
   useEffect(() => {
@@ -66,7 +104,7 @@ export const PlayerRanking = () => {
     if (currentPage !== 1) {
       setCurrentPage(1);
     } else {
-      fetchPlayers(1, sortField, searchTerm);
+      fetchPlayers(1, sortField, searchTerm, dateRange);
     }
   }, [sortField]);
 
@@ -75,9 +113,18 @@ export const PlayerRanking = () => {
     if (currentPage !== 1) {
       setCurrentPage(1);
     } else {
-      fetchPlayers(1, sortField, searchTerm);
+      fetchPlayers(1, sortField, searchTerm, dateRange);
     }
   }, [searchTerm]);
+
+  useEffect(() => {
+    // Reset para página 1 quando mudar o filtro de data
+    if (currentPage !== 1) {
+      setCurrentPage(1);
+    } else {
+      fetchPlayers(1, sortField, searchTerm, dateRange);
+    }
+  }, [dateRange]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -116,9 +163,15 @@ export const PlayerRanking = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
-
       <div className="container mx-auto px-4 py-8">
-        <RankingHeader sortField={sortField} onSortChange={setSortField} loading={loading} />
+        <RankingHeader 
+          sortField={sortField} 
+          onSortChange={handleSortFieldChange} 
+          loading={loading}
+          dateRange={dateRange}
+          onDateRangeChange={handleDateRangeChange}
+        />
+        
         {/* Última atualização */}
         {lastUpdated && (
           <div className="flex justify-center mb-6">
@@ -127,6 +180,7 @@ export const PlayerRanking = () => {
             </span>
           </div>
         )}
+        
         {/* Campo de Busca */}
         <div className="mb-6">
           <div className="relative max-w-md mx-auto">
@@ -161,10 +215,16 @@ export const PlayerRanking = () => {
                   <> (showing {((pagination.currentPage - 1) * pagination.itemsPerPage) + 1} - {Math.min(pagination.currentPage * pagination.itemsPerPage, pagination.totalItems)})</>
                 )}
                 {' '}for "{searchTerm}"
+                {sortField === 'Killpoints Gained' && dateRange && (
+                  <> from {formatDateUTC(dateRange.startDate)} to {formatDateUTC(dateRange.endDate)}</>
+                )}
               </>
             ) : (
               <>
                 Showing {((pagination.currentPage - 1) * pagination.itemsPerPage) + 1} - {Math.min(pagination.currentPage * pagination.itemsPerPage, pagination.totalItems)} from {pagination.totalItems} players
+{sortField === 'Killpoints Gained' && dateRange && (
+  <> (Killpoints gained from {formatDateUTC(dateRange.startDate)} to {formatDateUTC(dateRange.endDate)})</>
+)}
               </>
             )}
           </div>
@@ -184,7 +244,7 @@ export const PlayerRanking = () => {
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {displayPlayers.map((player, index) => (
               <PlayerCard 
-                key={`${player.playerId}-${currentPage}-${sortField}-${searchTerm}`} 
+                key={`${player.playerId}-${currentPage}-${sortField}-${searchTerm}-${dateRange?.startDate || 'no-date'}-${index}`} 
                 player={player} 
                 rank={player.rank}
               />
@@ -209,6 +269,9 @@ export const PlayerRanking = () => {
               <div>
                 <p className="text-lg text-muted-foreground mb-2">
                   No players found for "{searchTerm}"
+                  {sortField === 'Killpoints Gained' && dateRange && (
+                    <> in the period from {new Date(dateRange.startDate).toLocaleDateString('pt-BR')} to {new Date(dateRange.endDate).toLocaleDateString('pt-BR')}</>
+                  )}
                 </p>
                 <button
                   onClick={clearSearch}
@@ -218,7 +281,14 @@ export const PlayerRanking = () => {
                 </button>
               </div>
             ) : (
-              <p className="text-lg text-muted-foreground">No Players found.</p>
+              <div>
+                <p className="text-lg text-muted-foreground mb-2">No Players found.</p>
+                {sortField === 'Killpoints Gained' && dateRange && (
+                  <p className="text-sm text-muted-foreground">
+                    Try a different date range or clear the date filter.
+                  </p>
+                )}
+              </div>
             )}
           </div>
         )}
