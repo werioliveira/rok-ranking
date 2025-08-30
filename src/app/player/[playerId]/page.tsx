@@ -46,6 +46,7 @@ import { usePlayerDetail } from '@/hooks/usePlayerDetail';
 
 import { usePlayerHistoryAnalytics } from '@/hooks/usePlayerHistoryAnalytics';
 import GrowthIndicators from '@/components/PlayerDetails/GrowthIndicators';
+import { PlayerStatsChart } from '@/components/PlayerDetails/PlayerStatsChart';
 
 const PlayerDetailPage = () => {
   const params = useParams();
@@ -366,7 +367,7 @@ return (
         </div>
         
         {/* Chart Type Filter */}
-        <div className="flex gap-1">
+        {/* <div className="flex gap-1">
           {[
             { key: 'power', label: 'Power', icon: Crown },
             { key: 'totalKills', label: 'Kills', icon: Trophy },
@@ -385,7 +386,7 @@ return (
               <span className="hidden sm:inline">{label}</span>
             </button>
           ))}
-        </div>
+        </div> */}
       </div>
     </div>
 
@@ -456,93 +457,11 @@ return (
 )}
 
     {/* Chart */}
-    <div className="h-80">
-      {chartData.length > 0 ? (
-        <ResponsiveContainer width="100%" height="100%">
-          {periodComparison ? (
-            <AreaChart data={mergedChartData}>
-              <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-              <XAxis 
-                dataKey="date" 
-                className="text-xs"
-                tick={{ fontSize: 12 }}
-              />
-              <YAxis 
-                tickFormatter={(value) => formatNumber(Number(value))}
-                className="text-xs"
-                tick={{ fontSize: 12 }}
-              />
-              <Tooltip 
-                formatter={(value: any, name) => [
-                  formatNumber(Number(value)), 
-                  name === `${selectedChart}Delta` ? `${selectedChart} Growth` : selectedChart
-                ]}
-                labelFormatter={(label) => `Date: ${label}`}
-                contentStyle={{ 
-                  backgroundColor: 'hsl(var(--card))', 
-                  border: '1px solid hsl(var(--border))',
-                  borderRadius: '8px'
-                }}
-              />
-              <Area 
-                type="monotone" 
-                dataKey={`${selectedChart}Delta`}
-                stroke="hsl(var(--primary))" 
-                fill="hsl(var(--primary))"
-                fillOpacity={0.3}
-                strokeWidth={2}
-              />
-              <Line 
-                type="monotone" 
-                dataKey={`${selectedChart}Delta`}
-                stroke="hsl(var(--primary))" 
-                strokeWidth={3}
-                dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6, fill: 'hsl(var(--primary))' }}
-              />
-            </AreaChart>
-          ) : (
-            <LineChart data={mergedChartData}>
-              <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-              <XAxis 
-                dataKey="date" 
-                className="text-xs"
-                tick={{ fontSize: 12 }}
-              />
-              <YAxis 
-                tickFormatter={(value) => formatNumber(Number(value))}
-                className="text-xs"
-                tick={{ fontSize: 12 }}
-              />
-              <Tooltip 
-                formatter={(value: any) => [formatNumber(Number(value)), selectedChart]}
-                labelFormatter={(label) => `Date: ${label}`}
-                contentStyle={{ 
-                  backgroundColor: 'hsl(var(--card))', 
-                  border: '1px solid hsl(var(--border))',
-                  borderRadius: '8px'
-                }}
-              />
-              <Line 
-                type="monotone" 
-                dataKey={selectedChart} 
-                stroke="hsl(var(--primary))" 
-                strokeWidth={3}
-                dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6, fill: 'hsl(var(--primary))' }}
-              />
-            </LineChart>
-          )}
-        </ResponsiveContainer>
-      ) : (
-        <div className="flex items-center justify-center h-full text-muted-foreground">
-          <div className="text-center">
-            <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <p>No data available for selected period</p>
-          </div>
-        </div>
-      )}
-    </div>
+<PlayerStatsChart 
+  data={mergedChartData} 
+  periodComparison={periodComparison} 
+  formatNumber={formatNumber} 
+/>
   </div>
   
   {/* Kills Distribution with Growth */}

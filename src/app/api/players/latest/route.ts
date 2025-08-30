@@ -61,80 +61,65 @@ const endIso = endDate ? toUTCEpoch(endDate, true) : null;
     // ---------- Main query ----------
     let playersQuery: string;
 
-    if (isDateRangeFilter && startIso && endIso) {
-      // Busca snapshots DENTRO do intervalo:
-      // - start = primeiro snapshot >= startIso (dentro do intervalo)
-      // - end   = último snapshot <= endIso (dentro do intervalo)
-      // Depois calcula killpointsGained = endKillpoints - startKillpoints
-      playersQuery = `
-        WITH all_players AS (
-          SELECT DISTINCT playerId
-          FROM PlayerSnapshot
-        ),
-        date_boundaries AS (
-          SELECT
-            ap.playerId,
-            (SELECT ps1.createdAt
-             FROM PlayerSnapshot ps1
-             WHERE ps1.playerId = ap.playerId
-               AND ps1.createdAt >= '${startIso}'
-               AND ps1.createdAt <= '${endIso}'
-             ORDER BY ps1.createdAt ASC
-             LIMIT 1) AS closestStartDate,
-            (SELECT ps2.createdAt
-             FROM PlayerSnapshot ps2
-             WHERE ps2.playerId = ap.playerId
-               AND ps2.createdAt >= '${startIso}'
-               AND ps2.createdAt <= '${endIso}'
-             ORDER BY ps2.createdAt DESC
-             LIMIT 1) AS closestEndDate
-          FROM all_players ap
-        ),
-        period_snapshots AS (
-          SELECT
-            db.playerId,
-            ps_start.killpoints AS startKillpoints,
-            ps_end.killpoints AS endKillpoints,
-            ps_end.createdAt,
-            ps_end.name,
-            ps_end.power,
-            ps_end.killpoints,
-            ps_end.totalKills,
-            ps_end.t45Kills,
-            ps_end.rssGathered,
-            ps_end.rssAssist,
-            ps_end.t1Kills,
-            ps_end.t2Kills,
-            ps_end.t3Kills,
-            ps_end.t4Kills,
-            ps_end.t5Kills,
-            ps_end.deads,
-            ps_end.helps,
-            ps_end.alliance
-          FROM date_boundaries db
-          JOIN PlayerSnapshot ps_start ON ps_start.playerId = db.playerId AND ps_start.createdAt = db.closestStartDate
-          JOIN PlayerSnapshot ps_end   ON ps_end.playerId   = db.playerId AND ps_end.createdAt   = db.closestEndDate
-          WHERE db.closestStartDate IS NOT NULL
-            AND db.closestEndDate IS NOT NULL
-        ),
-        period_joined AS (
-          SELECT
-            ps.*,
-            COALESCE(CAST(ps.endKillpoints AS INTEGER) - CAST(ps.startKillpoints AS INTEGER), 0) AS killpointsGained
-          FROM period_snapshots ps
-          WHERE COALESCE(CAST(ps.endKillpoints AS INTEGER) - CAST(ps.startKillpoints AS INTEGER), 0) > 0
-        ),
-        ranked AS (
-          SELECT pj.*, ROW_NUMBER() OVER (ORDER BY killpointsGained DESC) AS rank
-          FROM period_joined pj
-        )
-        SELECT *
-        FROM ranked
-        ${search ? `WHERE name LIKE '%${escapedSearch}%'` : ""}
-        ORDER BY killpointsGained DESC
-        LIMIT ${limit} OFFSET ${offset};
-      `;
-    } else {
+if (isDateRangeFilter && startIso && endIso) {
+  playersQuery = `
+    WITH boundaries AS (
+      SELECT
+        playerId,
+        MIN(createdAt) AS startDate,
+        MAX(createdAt) AS endDate
+      FROM PlayerSnapshot
+      WHERE createdAt BETWEEN '${startIso}' AND '${endIso}'
+      GROUP BY playerId
+    ),
+    start_snap AS (
+      SELECT ps.playerId, ps.killpoints AS startKillpoints
+      FROM PlayerSnapshot ps
+      JOIN boundaries b 
+        ON ps.playerId = b.playerId AND ps.createdAt = b.startDate
+    ),
+    end_snap AS (
+      SELECT ps.playerId,
+             ps.killpoints AS endKillpoints,
+             ps.createdAt,
+             ps.name,
+             ps.power,
+             ps.killpoints,
+             ps.totalKills,
+             ps.t45Kills,
+             ps.rssGathered,
+             ps.rssAssist,
+             ps.t1Kills,
+             ps.t2Kills,
+             ps.t3Kills,
+             ps.t4Kills,
+             ps.t5Kills,
+             ps.deads,
+             ps.helps,
+             ps.alliance
+      FROM PlayerSnapshot ps
+      JOIN boundaries b 
+        ON ps.playerId = b.playerId AND ps.createdAt = b.endDate
+    ),
+    joined AS (
+      SELECT
+        e.*,
+        COALESCE(CAST(e.endKillpoints AS INTEGER) - CAST(s.startKillpoints AS INTEGER), 0) AS killpointsGained
+      FROM end_snap e
+      JOIN start_snap s USING (playerId)
+      WHERE (e.endKillpoints - s.startKillpoints) > 0
+    ),
+    ranked AS (
+      SELECT j.*, ROW_NUMBER() OVER (ORDER BY killpointsGained DESC) AS rank
+      FROM joined j
+    )
+    SELECT *
+    FROM ranked
+    ${search ? `WHERE name LIKE '%${escapedSearch}%'` : ""}
+    ORDER BY killpointsGained DESC
+    LIMIT ${limit} OFFSET ${offset};
+  `;
+} else {
       // Consulta padrão (período total: usa primeiro e último snapshot do jogador)
       playersQuery = `
         WITH first_last AS (
