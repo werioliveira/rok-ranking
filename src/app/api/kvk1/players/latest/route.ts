@@ -1,8 +1,6 @@
-
+import prismaKvk1 from "@/lib/prisma-kvk1";
 import { NextResponse } from "next/server";
-import prismaKvk2 from "@/lib/prisma-kvk2";
 
-const prisma = prismaKvk2
 
 // Serializa valores que podem quebrar JSON.stringify (bigint, Date)
 function serializeValue(v: any): any {
@@ -49,7 +47,7 @@ export async function GET(request: Request) {
     const isDateRangeFilter = sortBy === "Killpoints Gained" && startDate && endDate;
 
     // lastUpdated (pode vir como string/Date/bigint dependendo do armazenamento)
-    const lastUpdatedResult = await prisma.$queryRawUnsafe<{ last: any }[]>(
+    const lastUpdatedResult = await prismaKvk1.$queryRawUnsafe<{ last: any }[]>(
       `SELECT MAX(createdAt) as last FROM PlayerSnapshot;`
     );
     const lastUpdated = lastUpdatedResult?.[0]?.last || null;
@@ -158,7 +156,7 @@ if (isDateRangeFilter && startIso && endIso) {
       `;
     }
 
-    const latestSnapshots = await prisma.$queryRawUnsafe<any[]>(playersQuery);
+    const latestSnapshots = await prismaKvk1.$queryRawUnsafe<any[]>(playersQuery);
 
     // ---------- Total players count ----------
     let totalPlayersQuery: string;
@@ -231,7 +229,7 @@ if (isDateRangeFilter && startIso && endIso) {
       `;
     }
 
-    const totalPlayers = await prisma.$queryRawUnsafe<{ count: bigint }[]>(totalPlayersQuery);
+    const totalPlayers = await prismaKvk1.$queryRawUnsafe<{ count: bigint }[]>(totalPlayersQuery);
     const total = Number(totalPlayers?.[0]?.count || 0);
     const totalPages = Math.max(1, Math.ceil(total / limit));
 

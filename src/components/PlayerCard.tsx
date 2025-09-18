@@ -7,6 +7,8 @@ import Link from "next/link";
 interface PlayerCardProps {
   player: Player;
   rank: number;
+  kvk?: string;
+
 }
 
 const formatNumber = (num: number | string | bigint): string => {
@@ -43,7 +45,8 @@ const getRankBadgeVariant = (rank: number) => {
   return "default";
 };
 
-export const PlayerCard = ({ player, rank }: PlayerCardProps) => {
+export const PlayerCard = ({ player, rank, kvk }: PlayerCardProps) => {
+
   // Verifica se existe killpointsGained no player
   const killpointsGained = player.killpointsGained ? parseInt(player.killpointsGained) : 0;
   
@@ -78,7 +81,8 @@ export const PlayerCard = ({ player, rank }: PlayerCardProps) => {
         {/* Player name */}
         <div className="space-y-1">
           <Link
-            href={`/player/${player.playerId}`}
+            href={`/${kvk || 'kvk1'}/player/${player.playerId}`}
+
             className="inline-flex items-center gap-2 px-2 py-1 rounded-lg transition-colors group-hover:bg-primary/10 group-hover:shadow-[0_0_8px_0_rgba(80,120,255,0.15)] group-hover:text-primary-glow"
           >
             <h3 className="text-xl font-bold text-foreground transition-royal">

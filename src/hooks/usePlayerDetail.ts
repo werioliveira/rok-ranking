@@ -2,7 +2,10 @@
 import { useState, useEffect } from 'react';
 import { PlayerDetailResponse } from '@/types/playerDetails';
 
-export const usePlayerDetail = (playerId: string) => {
+export const usePlayerDetail = (playerId: string, kvk?: string) => {
+  const baseUrl = kvk ? `/api/${kvk}/players` : `/api/players`;
+
+
   const [data, setData] = useState<PlayerDetailResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -15,7 +18,8 @@ export const usePlayerDetail = (playerId: string) => {
       setError(null);
       
       try {
-        const response = await fetch(`/api/players/${playerId}`);
+        const response = await fetch(`${baseUrl}/${playerId}`);
+
         
         if (!response.ok) {
           throw new Error(`Erro ${response.status}: ${response.statusText}`);

@@ -8,7 +8,8 @@ import { RankingHeader } from "./RankingHeader";
 import { PaginationPages } from "./PaginationPages";
 import { Loader2, Search, X } from "lucide-react";
 
-export const PlayerRanking = () => {
+export const PlayerRanking = ({ kvk }: { kvk: string }) => {
+
   const [players, setPlayers] = useState<Player[]>([]);
   const [sortField, setSortField] = useState<SortField>("Power");
   const [currentPage, setCurrentPage] = useState(1);
@@ -43,7 +44,7 @@ export const PlayerRanking = () => {
       const searchParam = search !== undefined ? search : searchTerm;
       const dateFilterParam = dateFilter !== undefined ? dateFilter : dateRange;
       
-      let url = `/api/players/latest?page=${page}&limit=12&sortBy=${encodeURIComponent(sortParam)}`;
+      let url = `/api/${kvk ? `${kvk}/` : ''}players/latest?page=${page}&limit=12&sortBy=${encodeURIComponent(sortParam)}`;
       
       if (searchParam.trim()) {
         url += `&search=${encodeURIComponent(searchParam.trim())}`;
@@ -247,6 +248,8 @@ function formatDateUTC(dateStr: string) {
                 key={`${player.playerId}-${currentPage}-${sortField}-${searchTerm}-${dateRange?.startDate || 'no-date'}-${index}`} 
                 player={player} 
                 rank={player.rank}
+                kvk={kvk}
+
               />
             ))}
           </div>
