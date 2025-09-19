@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { ChevronDown, Home, Sword } from 'lucide-react';
+import { ChevronDown, Home, Sword, Globe } from 'lucide-react';
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
@@ -23,6 +23,14 @@ export default function Header() {
             Home
           </Link>
           
+          <Link 
+            href="/matchmaking" 
+            className="flex items-center text-card-foreground hover:text-primary transition-colors"
+          >
+            <Globe className="w-4 h-4 mr-1" />
+            Matchmaking
+          </Link>
+          
           <div className="relative">
             <button 
               onClick={() => setIsOpen(!isOpen)}
@@ -34,8 +42,7 @@ export default function Header() {
             </button>
             
             {isOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-popover rounded-md shadow-lg py-1 z-10 border border-muted z-[1000]">
-
+              <div className="absolute right-0 mt-2 w-48 bg-popover rounded-md shadow-lg py-1 z-10 border border-muted">
                 <Link 
                   href="/kvk1" 
                   className="block px-4 py-2 text-sm text-popover-foreground hover:bg-muted hover:text-primary transition-colors"

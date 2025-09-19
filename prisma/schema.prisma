@@ -29,3 +29,13 @@ model PlayerSnapshot {
   helps         BigInt
   alliance      String
 }
+
+model KingdomSnapshot {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  kingdomId   Int
+  name        String
+  totalPower  BigInt
+  playerCount Int
+  ranking     Int?     // calculado quando você buscar na API
+}

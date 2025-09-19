@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import * as XLSX from 'xlsx'
 
 export default function UploadPage() {
   const [data, setData] = useState<object[] | null>(null)
@@ -14,27 +15,48 @@ export default function UploadPage() {
     if (!file) return
 
     const reader = new FileReader()
+    const ext = file.name.split('.').pop()?.toLowerCase()
 
-    reader.onload = (event) => {
+    reader.onload = async (event) => {
       try {
-        const text = event.target?.result as string
+        if (ext === 'json' || ext === 'jsonl') {
+          // Lê JSONL
+          const text = event.target?.result as string
+          const lines = text
+            .split('\n')
+            .map(line => line.trim())
+            .filter(line => line.length > 0)
+            .map(line => JSON.parse(line))
+          setData(lines)
+        } else if (ext === 'xlsx' || ext === 'xls') {
+          // Lê XLSX
+          const arrayBuffer = event.target?.result as ArrayBuffer
+          const workbook = XLSX.read(arrayBuffer, { type: 'array' })
+          const sheetName = workbook.SheetNames[0]
+          const sheet = workbook.Sheets[sheetName]
+          let jsonData: any[] = XLSX.utils.sheet_to_json(sheet, { defval: null })
 
-        const lines = text
-          .split('\n')
-          .map(line => line.trim())
-          .filter(line => line.length > 0)
-          .map(line => JSON.parse(line))
+          // Ignora primeira linha se necessário
+          jsonData = jsonData.slice(1, 401) // primeira linha é header, até 400 registros
 
-        setData(lines)
+          setData(jsonData)
+        } else {
+          throw new Error('Formato de arquivo não suportado')
+        }
+
         setError(null)
         setSuccess(null)
       } catch (err) {
-        setError('Erro ao ler JSONL: ' + (err as Error).message)
+        setError('Erro ao ler arquivo: ' + (err as Error).message)
         setData(null)
       }
     }
 
-    reader.readAsText(file)
+    if (ext === 'xlsx' || ext === 'xls') {
+      reader.readAsArrayBuffer(file)
+    } else {
+      reader.readAsText(file)
+    }
   }
 
   const handleUpload = async () => {
@@ -50,20 +72,12 @@ export default function UploadPage() {
     try {
       const response = await fetch('/api/upload', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          password,
-          players: data,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password, players: data }),
       })
 
       const result = await response.json()
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Erro desconhecido')
-      }
+      if (!response.ok) throw new Error(result.error || 'Erro desconhecido')
 
       setSuccess(`Enviado com sucesso: ${result.count} registros`)
     } catch (err) {
@@ -75,12 +89,12 @@ export default function UploadPage() {
 
   return (
     <main className="max-w-2xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6 text-center">Upload de JSONL</h1>
+      <h1 className="text-3xl font-bold mb-6 text-center">Upload de JSONL / XLSX</h1>
 
       <div className="space-y-4">
         <input
           type="file"
-          accept=".json,.jsonl"
+          accept=".json,.jsonl,.xlsx,.xls"
           onChange={handleFileChange}
           className="w-full border border-gray-300 p-2 rounded"
         />
