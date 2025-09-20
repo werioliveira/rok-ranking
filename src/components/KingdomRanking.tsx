@@ -51,12 +51,12 @@ useEffect(() => {
   };
 
   if (loading) {
-    return <div className="flex justify-center items-center h-64">Carregando...</div>;
+    return <div className="flex justify-center items-center h-64">Loading...</div>;
   }
 
   return (
     <div className="container mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-6 text-center">Ranking de Reinos</h1>
+      <h1 className="text-3xl font-bold mb-6 text-center">Kingdoms Ranking</h1>
 
 <div className="flex gap-4 mb-4 items-center ">
   <label>
@@ -81,11 +81,10 @@ useEffect(() => {
           <thead>
             <tr className="bg-card text-card-foreground border-b border-muted">
               <th className="px-4 py-3 text-left">Ranking</th>
-              <th className="px-4 py-3 text-left">Reino</th>
-              <th className="px-4 py-3 text-right">Poder Total</th>
-              <th className="px-4 py-3 text-right">Jogadores</th>
-              <th className="px-4 py-3 text-right">Poder Médio</th>
-              <th className="px-4 py-3 text-right">Variação</th>
+              <th className="px-4 py-3 text-left">Kingdom</th>
+              <th className="px-4 py-3 text-right">Total Power</th>
+              <th className="px-4 py-3 text-right">Medium Power</th>
+              <th className="px-4 py-3 text-right">Variation</th>
             </tr>
           </thead>
           <tbody>
@@ -94,7 +93,6 @@ useEffect(() => {
                 <td className="px-4 py-3 text-left">{kingdom.ranking}</td>
                 <td className="px-4 py-3 text-left">{kingdom.name}</td>
                 <td className="px-4 py-3 text-right">{formatNumber(kingdom.totalPower)}</td>
-                <td className="px-4 py-3 text-right">{kingdom.playerCount}</td>
                 <td className="px-4 py-3 text-right">
                   {formatNumber(Number(kingdom.totalPower) / kingdom.playerCount)}
                 </td>
