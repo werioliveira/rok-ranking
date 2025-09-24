@@ -41,19 +41,22 @@ useEffect(() => {
   fetchData();
 }, [orderBy, orderDir]);
 
-  const formatNumber = (value: bigint | number | string) => {
-    const num = typeof value === 'bigint' ? Number(value) : Number(value);
+const formatNumber = (value: bigint | number | string) => {
+  const num = typeof value === 'bigint' ? Number(value) : Number(value);
+  const absNum = Math.abs(num);
 
-    if (num >= 1_000_000_000) return (num / 1_000_000_000).toFixed(1) + 'B';
-    if (num >= 1_000_000) return (num / 1_000_000).toFixed(1) + 'M';
-    if (num >= 1_000) return (num / 1_000).toFixed(1) + 'K';
-    return num.toString();
-  };
+  let formatted;
+  if (absNum >= 1_000_000_000) formatted = (absNum / 1_000_000_000).toFixed(1) + 'B';
+  else if (absNum >= 1_000_000) formatted = (absNum / 1_000_000).toFixed(1) + 'M';
+  else if (absNum >= 1_000) formatted = (absNum / 1_000).toFixed(1) + 'K';
+  else formatted = absNum.toString();
+
+  return num < 0 ? `-${formatted}` : formatted;
+};
 
   if (loading) {
     return <div className="flex justify-center items-center h-64">Loading...</div>;
   }
-
   return (
     <div className="container mx-auto py-8">
       <h1 className="text-3xl font-bold mb-6 text-center">Kingdoms Ranking</h1>
