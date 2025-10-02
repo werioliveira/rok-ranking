@@ -236,7 +236,7 @@ const setSize = (size: number) => wrapOrReplaceTag("size", size.toString());
       <div className="space-y-4">
         <Card className="p-6 bg-card border-border">
           <h2 className="text-xl font-bold text-primary mb-2">Preview</h2>
-          <div className="min-h-[400px] p-4 bg-background rounded-lg border border-border">
+          <div className="min-h-[400px] p-4 bg-[#FCE7C4] rounded-lg border border-border">
             <div dangerouslySetInnerHTML={renderPreview()} />
           </div>
         </Card>
