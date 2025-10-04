@@ -8,8 +8,8 @@ import { Sword, Users, AlertTriangle, Crown } from "lucide-react";
 
 export default function MessageEditor() {
   const [message, setMessage] = useState("");
-  const [selectedColor, setSelectedColor] = useState("#FFD700");
-  const [colorInput, setColorInput] = useState("#FFD700");
+  const [selectedColor, setSelectedColor] = useState("#222220");
+  const [colorInput, setColorInput] = useState("#222220");
   const [fontSize, setFontSize] = useState(14);
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -189,19 +189,23 @@ Let’s dominate this event!</color>`,
     }
   };
 
-  const renderPreview = () => {
-    let preview = message;
-    preview = preview.replace(/<color=(#[A-Fa-f0-9]{6})>/g, '<span style="color:$1">');
-    preview = preview.replace(/<\/color>/g, '</span>');
-    preview = preview.replace(/<b>/g, '<strong>');
-    preview = preview.replace(/<\/b>/g, '</strong>');
-    preview = preview.replace(/<i>/g, '<em>');
-    preview = preview.replace(/<\/i>/g, '</em>');
-    preview = preview.replace(/<size=(\d+)>/g, '<span style="font-size:$1px">');
-    preview = preview.replace(/<\/size>/g, '</span>');
-    preview = preview.replace(/\n/g, '<br />');
-    return { __html: preview };
-  };
+const renderPreview = () => {
+  let preview = message;
+
+  // Substitui as tags por HTML estilizado
+  preview = preview.replace(/<color=(#[A-Fa-f0-9]{6})>/g, '<span style="color:$1">');
+  preview = preview.replace(/<\/color>/g, '</span>');
+  preview = preview.replace(/<b>/g, '<strong>');
+  preview = preview.replace(/<\/b>/g, '</strong>');
+  preview = preview.replace(/<i>/g, '<em>');
+  preview = preview.replace(/<\/i>/g, '</em>');
+  preview = preview.replace(/<size=(\d+)>/g, '<span style="font-size:$1px">');
+  preview = preview.replace(/<\/size>/g, '</span>');
+  preview = preview.replace(/\n/g, '<br />');
+
+  // 🔹 Envolve tudo em um <div> com cor padrão #222220
+  return { __html: `<div style="color:#222220">${preview}</div>` };
+};
 
   return (
     <div className="grid lg:grid-cols-2 gap-6 min-h-screen p-4">
