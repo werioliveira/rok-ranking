@@ -248,7 +248,7 @@ function formatDateUTC(dateStr: string) {
                 key={`${player.playerId}-${currentPage}-${sortField}-${searchTerm}-${dateRange?.startDate || 'no-date'}-${index}`} 
                 player={player} 
                 rank={player.rank}
-                kvk={kvk}
+                kvk={kvk ? "kvk1":""}
 
               />
             ))}
