@@ -37,7 +37,7 @@ export default function UploadPage() {
           let jsonData: any[] = XLSX.utils.sheet_to_json(sheet, { defval: null })
 
           // Ignora primeira linha se necessário
-          jsonData = jsonData.slice(1, 401) // primeira linha é header, até 400 registros
+          jsonData = jsonData.slice(0, 1001) // primeira linha é header, até 400 registros
 
           setData(jsonData)
         } else {

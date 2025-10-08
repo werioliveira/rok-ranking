@@ -1,8 +1,8 @@
 // app/api/upload/route.ts
 import { NextRequest, NextResponse } from "next/server"
-import { PrismaClient } from "@prisma/client"
+import prismaKvk2 from "@/lib/prisma-kvk2";
 
-const prisma = new PrismaClient()
+const prisma = prismaKvk2
 
 export async function POST(req: NextRequest) {
   try {
