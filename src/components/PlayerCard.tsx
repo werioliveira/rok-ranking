@@ -49,6 +49,7 @@ export const PlayerCard = ({ player, rank, kvk }: PlayerCardProps) => {
 
   // Verifica se existe killpointsGained no player
   const killpointsGained = player.killpointsGained ? parseInt(player.killpointsGained) : 0;
+  const kvklink = kvk ? kvk : "";
   
   return (
     <Card className="player-card group relative overflow-hidden border-border/50 bg-card/80 backdrop-blur-sm hover:bg-card/90 transition-royal">
@@ -81,7 +82,7 @@ export const PlayerCard = ({ player, rank, kvk }: PlayerCardProps) => {
         {/* Player name */}
         <div className="space-y-1">
           <Link
-            href={`/${kvk || ''}/player/${player.playerId}`}
+            href={`/${kvk}/player/${player.playerId}`}
 
             className="inline-flex items-center gap-2 px-2 py-1 rounded-lg transition-colors group-hover:bg-primary/10 group-hover:shadow-[0_0_8px_0_rgba(80,120,255,0.15)] group-hover:text-primary-glow"
           >
