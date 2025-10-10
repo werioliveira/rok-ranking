@@ -42,7 +42,7 @@ export default function Header() {
             </button>
             
             {isOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-popover rounded-md shadow-lg py-1 z-10 border border-muted">
+              <div className="absolute right-0 mt-2 w-48 bg-popover rounded-md shadow-lg py-1 z-[1000] border border-muted">
                 <Link 
                   href="/kvk1" 
                   className="block px-4 py-2 text-sm text-popover-foreground hover:bg-muted hover:text-primary transition-colors"
