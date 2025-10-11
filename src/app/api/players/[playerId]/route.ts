@@ -1,5 +1,5 @@
 // app/api/players/[playerId]/route.ts
-import prismaKvk2 from "@/lib/prisma-kvk1";
+import prismaKvk2 from "@/lib/prisma-kvk2";
 import { NextResponse } from "next/server"
 
 const prisma = prismaKvk2;
