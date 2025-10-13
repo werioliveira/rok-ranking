@@ -196,32 +196,27 @@ export const PlayerCard = ({ player, rank, kvk }: PlayerCardProps) => {
 )}
 
 {/* Deads gained indicator */}
-{player.deadsGained && (
+{player.deadsGained !== undefined && (
   <div className="pt-1">
     <div className="flex items-center justify-center gap-2 text-xs">
       {(() => {
-        const deadsGained = Number(player.deadsGained);
+        const deadsGained = Number(player.deadsGained) || 0;
+        const color =
+          deadsGained > 0
+            ? 'text-red-500'
+            : deadsGained < 0
+            ? 'text-green-500'
+            : 'text-muted-foreground';
+
         return (
           <>
             <TrendingUp
-              className={`w-3 h-3 ${
-                deadsGained > 0
-                  ? 'text-red-500'
-                  : deadsGained < 0
-                  ? 'text-green-500 rotate-180'
-                  : 'text-muted-foreground'
+              className={`w-3 h-3 ${color} ${
+                deadsGained < 0 ? 'rotate-180' : ''
               }`}
             />
             <span className="text-muted-foreground">Deads Gained:</span>
-            <span
-              className={`font-semibold ${
-                deadsGained > 0
-                  ? 'text-red-500'
-                  : deadsGained < 0
-                  ? 'text-green-500'
-                  : 'text-muted-foreground'
-              }`}
-            >
+            <span className={`font-semibold ${color}`}>
               {deadsGained > 0 ? '+' : ''}
               {formatNumber(deadsGained)}
             </span>
