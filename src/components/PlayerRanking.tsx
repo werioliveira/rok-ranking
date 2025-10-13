@@ -251,6 +251,7 @@ function formatDateUTC(dateStr: string) {
                 kvk={kvk ? "kvk1":""}
 
               />
+              
             ))}
           </div>
         </div>

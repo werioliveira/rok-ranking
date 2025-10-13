@@ -45,83 +45,84 @@ export async function GET(request: Request) {
 
     const escapedSearch = search.replace(/'/g, "''");
 
-    // É filtro por período específico quando o usuário escolhe "Killpoints Gained" e passou start/end
     const isDateRangeFilter = sortBy === "Killpoints Gained" && startDate && endDate;
 
-    // lastUpdated (pode vir como string/Date/bigint dependendo do armazenamento)
     const lastUpdatedResult = await prisma.$queryRawUnsafe<{ last: any }[]>(
       `SELECT MAX(createdAt) as last FROM PlayerSnapshot;`
     );
     const lastUpdated = lastUpdatedResult?.[0]?.last || null;
 
-    // helper: formar iso para comparações
+    const startIso = startDate ? toUTCEpoch(startDate) : null;
+    const endIso = endDate ? toUTCEpoch(endDate, true) : null;
 
-const startIso = startDate ? toUTCEpoch(startDate) : null;
-const endIso = endDate ? toUTCEpoch(endDate, true) : null;
-
-    // ---------- Main query ----------
     let playersQuery: string;
 
-if (isDateRangeFilter && startIso && endIso) {
-  playersQuery = `
-    WITH boundaries AS (
-      SELECT
-        playerId,
-        MIN(createdAt) AS startDate,
-        MAX(createdAt) AS endDate
-      FROM PlayerSnapshot
-      WHERE createdAt BETWEEN '${startIso}' AND '${endIso}'
-      GROUP BY playerId
-    ),
-    start_snap AS (
-      SELECT ps.playerId, ps.killpoints AS startKillpoints
-      FROM PlayerSnapshot ps
-      JOIN boundaries b 
-        ON ps.playerId = b.playerId AND ps.createdAt = b.startDate
-    ),
-    end_snap AS (
-      SELECT ps.playerId,
-             ps.killpoints AS endKillpoints,
-             ps.createdAt,
-             ps.name,
-             ps.power,
-             ps.killpoints,
-             ps.totalKills,
-             ps.t45Kills,
-             ps.rssGathered,
-             ps.rssAssist,
-             ps.t1Kills,
-             ps.t2Kills,
-             ps.t3Kills,
-             ps.t4Kills,
-             ps.t5Kills,
-             ps.deads,
-             ps.helps,
-             ps.alliance
-      FROM PlayerSnapshot ps
-      JOIN boundaries b 
-        ON ps.playerId = b.playerId AND ps.createdAt = b.endDate
-    ),
-    joined AS (
-      SELECT
-        e.*,
-        COALESCE(CAST(e.endKillpoints AS INTEGER) - CAST(s.startKillpoints AS INTEGER), 0) AS killpointsGained
-      FROM end_snap e
-      JOIN start_snap s USING (playerId)
-      WHERE (e.endKillpoints - s.startKillpoints) > 0
-    ),
-    ranked AS (
-      SELECT j.*, ROW_NUMBER() OVER (ORDER BY killpointsGained DESC) AS rank
-      FROM joined j
-    )
-    SELECT *
-    FROM ranked
-    ${search ? `WHERE name LIKE '%${escapedSearch}%'` : ""}
-    ORDER BY killpointsGained DESC
-    LIMIT ${limit} OFFSET ${offset};
-  `;
-} else {
-      // Consulta padrão (período total: usa primeiro e último snapshot do jogador)
+    if (isDateRangeFilter && startIso && endIso) {
+      playersQuery = `
+        WITH boundaries AS (
+          SELECT
+            playerId,
+            MIN(createdAt) AS startDate,
+            MAX(createdAt) AS endDate
+          FROM PlayerSnapshot
+          WHERE createdAt BETWEEN '${startIso}' AND '${endIso}'
+          GROUP BY playerId
+        ),
+        start_snap AS (
+          SELECT 
+            ps.playerId, 
+            ps.killpoints AS startKillpoints,
+            ps.deads AS startDeads
+          FROM PlayerSnapshot ps
+          JOIN boundaries b 
+            ON ps.playerId = b.playerId AND ps.createdAt = b.startDate
+        ),
+        end_snap AS (
+          SELECT 
+            ps.playerId,
+            ps.killpoints AS endKillpoints,
+            ps.deads AS endDeads,
+            ps.createdAt,
+            ps.name,
+            ps.power,
+            ps.killpoints,
+            ps.totalKills,
+            ps.t45Kills,
+            ps.rssGathered,
+            ps.rssAssist,
+            ps.t1Kills,
+            ps.t2Kills,
+            ps.t3Kills,
+            ps.t4Kills,
+            ps.t5Kills,
+            ps.deads,
+            ps.helps,
+            ps.alliance
+          FROM PlayerSnapshot ps
+          JOIN boundaries b 
+            ON ps.playerId = b.playerId AND ps.createdAt = b.endDate
+        ),
+        joined AS (
+          SELECT
+            e.*,
+            COALESCE(CAST(e.endKillpoints AS INTEGER) - CAST(s.startKillpoints AS INTEGER), 0) AS killpointsGained,
+            COALESCE(CAST(e.endDeads AS INTEGER) - CAST(s.startDeads AS INTEGER), 0) AS deadsGained
+          FROM end_snap e
+          JOIN start_snap s USING (playerId)
+          WHERE (e.endKillpoints - s.startKillpoints) > 0
+             OR (e.endDeads - s.startDeads) > 0
+        ),
+        ranked AS (
+          SELECT j.*, ROW_NUMBER() OVER (ORDER BY killpointsGained DESC) AS rank
+          FROM joined j
+        )
+        SELECT *
+        FROM ranked
+        ${search ? `WHERE name LIKE '%${escapedSearch}%'` : ""}
+        ORDER BY killpointsGained DESC
+        LIMIT ${limit} OFFSET ${offset};
+      `;
+    } else {
       playersQuery = `
         WITH first_last AS (
           SELECT
@@ -137,12 +138,18 @@ if (isDateRangeFilter && startIso && endIso) {
           JOIN first_last fl ON ps.playerId = fl.playerId AND ps.createdAt = fl.lastDate
         ),
         earliest AS (
-          SELECT ps.playerId, ps.killpoints AS firstKillpoints
+          SELECT 
+            ps.playerId, 
+            ps.killpoints AS firstKillpoints,
+            ps.deads AS firstDeads
           FROM PlayerSnapshot ps
           JOIN first_last fl ON ps.playerId = fl.playerId AND ps.createdAt = fl.firstDate
         ),
         joined AS (
-          SELECT l.*, COALESCE(l.killpoints - e.firstKillpoints, 0) AS killpointsGained
+          SELECT 
+            l.*, 
+            COALESCE(l.killpoints - e.firstKillpoints, 0) AS killpointsGained,
+            COALESCE(l.deads - e.firstDeads, 0) AS deadsGained
           FROM latest l
           JOIN earliest e USING(playerId)
         ),
@@ -160,7 +167,6 @@ if (isDateRangeFilter && startIso && endIso) {
 
     const latestSnapshots = await prisma.$queryRawUnsafe<any[]>(playersQuery);
 
-    // ---------- Total players count ----------
     let totalPlayersQuery: string;
 
     if (isDateRangeFilter && startIso && endIso) {
@@ -235,7 +241,6 @@ if (isDateRangeFilter && startIso && endIso) {
     const total = Number(totalPlayers?.[0]?.count || 0);
     const totalPages = Math.max(1, Math.ceil(total / limit));
 
-    // ---------- Serialize resultados ----------
     const serialized = latestSnapshots.map((p) => ({
       playerId: serializeValue(p.playerId),
       name: serializeValue(p.name),
@@ -243,6 +248,7 @@ if (isDateRangeFilter && startIso && endIso) {
       power: serializeValue(p.power),
       killpoints: serializeValue(p.killpoints),
       killpointsGained: serializeValue(p.killpointsGained) ?? "0",
+      deadsGained: Number(serializeValue(p.deadsGained) ?? 0),
       totalKills: serializeValue(p.totalKills),
       t45Kills: serializeValue(p.t45Kills),
       rssGathered: serializeValue(p.rssGathered),
