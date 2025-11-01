@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { SortField } from "@/types/player";
-import { Crown, Sword, Trophy, BarChart3, Coins, Loader2, Calendar } from "lucide-react";
+import { Crown, Sword, Trophy, BarChart3, Coins, Loader2, Calendar, Skull } from "lucide-react";
 import { useState } from "react";
 
 interface RankingHeaderProps {
@@ -19,6 +19,7 @@ const sortOptions: { field: SortField; label: string; icon: React.ReactNode }[] 
   { field: 'T45 Kills', label: 'T4/T5 Kills', icon: <BarChart3 className="w-4 h-4" /> },
   { field: 'Rss Gathered', label: 'RSS Gathered', icon: <Coins className="w-4 h-4" /> },
   { field: 'Killpoints Gained', label: 'Killpoints Gained', icon: <Sword className="w-4 h-4" /> },
+  { field: 'Deads Gained', label: 'Deads Gained', icon: <Skull className="w-4 h-4" /> },
 ];
 function formatDateUTC(dateStr: string) {
   // dateStr = 'YYYY-MM-DD'
@@ -65,7 +66,7 @@ export const RankingHeader = ({
   };
 
   // Verificar se é Killpoints Gained e se deve mostrar o filtro de data
-  const isKillpointsGained = sortField === 'Killpoints Gained';
+  const isGainedFilter = sortField === 'Killpoints Gained' || sortField === 'Deads Gained';
 
   return (
     <div className="relative mb-8">
@@ -98,7 +99,7 @@ export const RankingHeader = ({
             <div className="flex items-center gap-1 font-medium text-foreground">
               {sortOptions.find(opt => opt.field === sortField)?.icon}
               {sortOptions.find(opt => opt.field === sortField)?.label}
-              {isKillpointsGained && dateRange && (
+              {isGainedFilter && dateRange && (
                 <span className="text-xs text-primary ml-1">
                   
                   ({formatDateUTC(dateRange.startDate)} - {formatDateUTC(dateRange.endDate)})
@@ -138,7 +139,7 @@ export const RankingHeader = ({
         </div>
 
         {/* Date Filter Button - Only show when Killpoints Gained is selected */}
-        {isKillpointsGained && onDateRangeChange && (
+        {isGainedFilter && onDateRangeChange && (
           <div className="flex justify-center">
             <Button
               variant="outline"
@@ -158,7 +159,7 @@ export const RankingHeader = ({
         )}
 
         {/* Date Filter Panel */}
-        {isKillpointsGained && showDateFilter && (
+        {isGainedFilter && showDateFilter && (
           <div className="mt-4 p-4 bg-background/90 backdrop-blur-sm rounded-lg border max-w-md mx-auto">
             <h3 className="font-medium mb-3 text-foreground">Select Period for Killpoints Gained</h3>
             

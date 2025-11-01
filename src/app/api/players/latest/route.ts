@@ -40,12 +40,16 @@ export async function GET(request: Request) {
       "T45 Kills": "t45Kills",
       "Rss Gathered": "rssGathered",
       "Killpoints Gained": "killpointsGained",
+      "Deads Gained": "deadsGained",
     };
     const sortKey = sortFieldMap[sortBy] || "power";
 
     const escapedSearch = search.replace(/'/g, "''");
 
-    const isDateRangeFilter = sortBy === "Killpoints Gained" && startDate && endDate;
+    const isDateRangeFilter =
+  (sortBy === "Killpoints Gained" || sortBy === "Deads Gained") &&
+  startDate &&
+  endDate;
 
     const lastUpdatedResult = await prisma.$queryRawUnsafe<{ last: any }[]>(
       `SELECT MAX(createdAt) as last FROM PlayerSnapshot;`
@@ -113,14 +117,14 @@ export async function GET(request: Request) {
              OR (e.endDeads - s.startDeads) > 0
         ),
         ranked AS (
-          SELECT j.*, ROW_NUMBER() OVER (ORDER BY killpointsGained DESC) AS rank
-          FROM joined j
-        )
-        SELECT *
-        FROM ranked
-        ${search ? `WHERE name LIKE '%${escapedSearch}%'` : ""}
-        ORDER BY killpointsGained DESC
-        LIMIT ${limit} OFFSET ${offset};
+  SELECT j.*, ROW_NUMBER() OVER (ORDER BY ${sortKey} DESC) AS rank
+  FROM joined j
+)
+SELECT *
+FROM ranked
+${search ? `WHERE name LIKE '%${escapedSearch}%'` : ""}
+ORDER BY ${sortKey} DESC
+LIMIT ${limit} OFFSET ${offset};
       `;
     } else {
       playersQuery = `

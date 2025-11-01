@@ -32,15 +32,16 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ playerId: string }> }
 ) {
-    let { playerId } = await params;
+  let { playerId } = await params;
+
   try {
-    playerId = parseInt(playerId)
+    playerId = parseInt(playerId);
 
     if (isNaN(playerId)) {
       return NextResponse.json(
         { error: "ID do jogador inválido" },
         { status: 400 }
-      )
+      );
     }
 
     const latestSnapshot = await prisma.$queryRawUnsafe<any[]>(`
@@ -49,12 +50,13 @@ export async function GET(
       WHERE playerId = ${playerId}
       ORDER BY createdAt DESC
       LIMIT 1
-    `)
+    `);
+
     if (latestSnapshot.length === 0) {
       return NextResponse.json(
         { error: "Jogador não encontrado" },
         { status: 404 }
-      )
+      );
     }
 
     const playerHistory = await prisma.$queryRawUnsafe<any[]>(`
@@ -62,7 +64,7 @@ export async function GET(
       FROM PlayerSnapshot
       WHERE playerId = ${playerId}
       ORDER BY createdAt ASC
-    `)
+    `);
 
     const stats = await prisma.$queryRawUnsafe<any[]>(`
       SELECT 
@@ -74,10 +76,12 @@ export async function GET(
         MIN(killpoints) as minKillpoints,
         MAX(killpoints) as maxKillpoints,
         MIN(totalKills) as minTotalKills,
-        MAX(totalKills) as maxTotalKills
+        MAX(totalKills) as maxTotalKills,
+        MIN(deads) as minDeads,
+        MAX(deads) as maxDeads
       FROM PlayerSnapshot
       WHERE playerId = ${playerId}
-    `)
+    `);
 
     const rankQuery = await prisma.$queryRawUnsafe<{ rank: bigint }[]>(`
       SELECT COUNT(*) + 1 as rank
@@ -88,7 +92,7 @@ export async function GET(
         FROM PlayerSnapshot
         GROUP BY playerId
       )
-    `)
+    `);
 
     const weekAgoSnapshot = await prisma.$queryRawUnsafe<any[]>(`
       SELECT *
@@ -97,28 +101,31 @@ export async function GET(
       AND createdAt <= datetime('now', '-7 days')
       ORDER BY createdAt DESC
       LIMIT 1
-    `)
+    `);
 
-    // Converter BigInt para Number em todos os dados
+    // Conversões
     const latestConverted = convertBigIntAndDate(latestSnapshot[0]);
     const historyConverted = convertBigIntAndDate(playerHistory);
     const statsConverted = convertBigIntAndDate(stats[0]);
     const rankConverted = convertBigIntAndDate(rankQuery[0]);
-    const weekAgoConverted = weekAgoSnapshot.length > 0 ? convertBigIntAndDate(weekAgoSnapshot[0]) : null;
+    const weekAgoConverted =
+      weekAgoSnapshot.length > 0
+        ? convertBigIntAndDate(weekAgoSnapshot[0])
+        : null;
 
-    // Serializar dados com valores já convertidos
+    // Dados atuais
     const currentData = {
       ...latestConverted,
       rssGathered: latestConverted.rssGathered?.toString() || "0",
       rssAssist: latestConverted.rssAssist?.toString() || "0",
       currentRank: rankConverted.rank,
-    }
+    };
 
     const history = historyConverted.map((snapshot: any) => ({
       ...snapshot,
       rssGathered: snapshot.rssGathered?.toString() || "0",
       rssAssist: snapshot.rssAssist?.toString() || "0",
-    }))
+    }));
 
     const statistics = {
       totalSnapshots: statsConverted.totalSnapshots,
@@ -129,15 +136,17 @@ export async function GET(
       powerGrowth: statsConverted.maxPower - statsConverted.minPower,
       killpointsGrowth: statsConverted.maxKillpoints - statsConverted.minKillpoints,
       totalKillsGrowth: statsConverted.maxTotalKills - statsConverted.minTotalKills,
-    }
+      deadsGrowth: statsConverted.maxDeads - statsConverted.minDeads, // ✅ novo campo
+    };
 
-    let weeklyTrends = null
+    let weeklyTrends = null;
     if (weekAgoConverted) {
       weeklyTrends = {
         powerChange: currentData.power - weekAgoConverted.power,
         killpointsChange: currentData.killpoints - weekAgoConverted.killpoints,
         totalKillsChange: currentData.totalKills - weekAgoConverted.totalKills,
-      }
+        deadsChange: currentData.deads - weekAgoConverted.deads, // ✅ semanal
+      };
     }
 
     return NextResponse.json({
@@ -145,12 +154,12 @@ export async function GET(
       history,
       statistics,
       weeklyTrends,
-    })
+    });
   } catch (error) {
-    console.error("Erro ao buscar dados do jogador:", error)
+    console.error("Erro ao buscar dados do jogador:", error);
     return NextResponse.json(
       { error: "Erro interno do servidor" },
       { status: 500 }
-    )
+    );
   }
 }

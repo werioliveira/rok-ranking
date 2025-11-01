@@ -51,7 +51,7 @@ export const PlayerRanking = ({ kvk }: { kvk: string }) => {
       }
       
       // Adicionar parâmetros de data se houver filtro de data e se for Killpoints Gained
-      if (dateFilterParam && sortParam === 'Killpoints Gained') {
+      if (dateFilterParam && (sortParam === 'Killpoints Gained' || sortParam === 'Deads Gained')) {
         url += `&startDate=${encodeURIComponent(dateFilterParam.startDate)}`;
         url += `&endDate=${encodeURIComponent(dateFilterParam.endDate)}`;
       }
@@ -72,7 +72,6 @@ export const PlayerRanking = ({ kvk }: { kvk: string }) => {
       setInitialLoad(false);
     }
   }, [sortField, searchTerm, dateRange]);
-
   // Handler para mudança do filtro de data
   const handleDateRangeChange = (range: { startDate: string; endDate: string } | null) => {
     setDateRange(range);

@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
     // Converte em JSON, ignorando a primeira linha (header) e limitando a 400 registros
     const rows: any[] = XLSX.utils.sheet_to_json(sheet, { header: 1 });
     // rows[0] é o cabeçalho, ignoramos ele
-    const dataRows = rows.slice(1, 401); // pega no máximo 400 linhas depois do cabeçalho
+    const dataRows = rows.slice(1, 301); // pega no máximo 400 linhas depois do cabeçalho
 
     // Agora mapear para objetos usando o cabeçalho original
     const header = rows[0];
