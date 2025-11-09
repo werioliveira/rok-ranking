@@ -51,7 +51,7 @@ export const PlayerRanking = ({ kvk }: { kvk: string }) => {
       }
       
       // Adicionar parâmetros de data se houver filtro de data e se for Killpoints Gained
-      if (dateFilterParam && (sortParam === 'Killpoints Gained' || sortParam === 'Deads Gained')) {
+      if (dateFilterParam && (sortParam === 'Killpoints Gained' || sortParam === 'Deads Gained' || sortParam === 'T45 Kills Gained')) {
         url += `&startDate=${encodeURIComponent(dateFilterParam.startDate)}`;
         url += `&endDate=${encodeURIComponent(dateFilterParam.endDate)}`;
       }
@@ -252,6 +252,7 @@ function formatDateUTC(dateStr: string) {
               />
               
             ))}
+            
           </div>
         </div>
 

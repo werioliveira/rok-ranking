@@ -17,6 +17,8 @@ export interface Player {
   t5Kills: number
   totalKills: number
   t45Kills: number
+  killpointsT45Gained: number; // Nova propriedade
+  killpointsT1Gained: number; // Nova propriedade
   ranged: number
   rssGathered: string | number
   rssAssist: string | number
@@ -26,4 +28,4 @@ export interface Player {
 }
 // Adicione ao seu types/player.ts existente
 export interface PlayerResponse extends PaginatedResponse<Player> {}
-export type SortField = 'Power' | 'Killpoints' | 'Total Kills' | 'T45 Kills' | 'Rss Gathered' | 'Killpoints Gained' | 'Deads Gained';
+export type SortField = 'Power' | 'Killpoints' | 'Total Kills' | 'T45 Kills' | 'Rss Gathered' | 'Killpoints Gained' | 'Deads Gained' | 'T45 Killpoints Gained' | 'Killpoints T1 Gained';

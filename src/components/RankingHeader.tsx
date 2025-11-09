@@ -20,6 +20,9 @@ const sortOptions: { field: SortField; label: string; icon: React.ReactNode }[] 
   { field: 'Rss Gathered', label: 'RSS Gathered', icon: <Coins className="w-4 h-4" /> },
   { field: 'Killpoints Gained', label: 'Killpoints Gained', icon: <Sword className="w-4 h-4" /> },
   { field: 'Deads Gained', label: 'Deads Gained', icon: <Skull className="w-4 h-4" /> },
+  { field: 'T45 Killpoints Gained', label: 'T4/T5 Killpoints Gained', icon: <Sword className="w-4 h-4" /> },
+  { field: 'Killpoints T1 Gained', label: 'T1 Killpoints Gained', icon: <Sword className="w-4 h-4" /> },
+  
 ];
 function formatDateUTC(dateStr: string) {
   // dateStr = 'YYYY-MM-DD'

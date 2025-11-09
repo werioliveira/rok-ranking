@@ -1,8 +1,7 @@
-
 import { NextResponse } from "next/server";
 import prismaKvk2 from "@/lib/prisma-kvk2";
 
-const prisma = prismaKvk2
+const prisma = prismaKvk2;
 
 // Serializa valores que podem quebrar JSON.stringify (bigint, Date)
 function serializeValue(v: any): any {
@@ -11,13 +10,12 @@ function serializeValue(v: any): any {
   if (v instanceof Date) return v.toISOString();
   return v;
 }
+
 function toUTCEpoch(dateStr: string, isEndOfDay = false) {
   const [year, month, day] = dateStr.split("-").map(Number);
-  if (!isEndOfDay) {
-    return Date.UTC(year, month - 1, day, 0, 0, 0, 0);       // início do dia UTC
-  } else {
-    return Date.UTC(year, month - 1, day, 23, 59, 59, 999); // fim do dia UTC
-  }
+  return isEndOfDay
+    ? Date.UTC(year, month - 1, day, 23, 59, 59, 999)
+    : Date.UTC(year, month - 1, day, 0, 0, 0, 0);
 }
 
 export async function GET(request: Request) {
@@ -29,8 +27,8 @@ export async function GET(request: Request) {
     const sortBy = searchParams.get("sortBy") || "Power";
     const rawSearch = searchParams.get("search") || "";
     const search = rawSearch.trim();
-    const startDate = searchParams.get("startDate"); // esperado: YYYY-MM-DD
-    const endDate = searchParams.get("endDate");     // esperado: YYYY-MM-DD
+    const startDate = searchParams.get("startDate");
+    const endDate = searchParams.get("endDate");
     const offset = (page - 1) * limit;
 
     const sortFieldMap: Record<string, string> = {
@@ -41,15 +39,20 @@ export async function GET(request: Request) {
       "Rss Gathered": "rssGathered",
       "Killpoints Gained": "killpointsGained",
       "Deads Gained": "deadsGained",
+      "Killpoints T45 Gained": "killpointsT45Gained",
+      "Killpoints T1 Gained": "killpointsT1Gained",
     };
     const sortKey = sortFieldMap[sortBy] || "power";
 
     const escapedSearch = search.replace(/'/g, "''");
 
     const isDateRangeFilter =
-  (sortBy === "Killpoints Gained" || sortBy === "Deads Gained") &&
-  startDate &&
-  endDate;
+      (sortBy === "Killpoints Gained" ||
+        sortBy === "Deads Gained" ||
+        sortBy === "Killpoints T45 Gained" ||
+        sortBy === "Killpoints T1 Gained") &&
+      startDate &&
+      endDate;
 
     const lastUpdatedResult = await prisma.$queryRawUnsafe<{ last: any }[]>(
       `SELECT MAX(createdAt) as last FROM PlayerSnapshot;`
@@ -61,6 +64,7 @@ export async function GET(request: Request) {
 
     let playersQuery: string;
 
+    // 🔹 Query com filtro de datas
     if (isDateRangeFilter && startIso && endIso) {
       playersQuery = `
         WITH boundaries AS (
@@ -76,7 +80,10 @@ export async function GET(request: Request) {
           SELECT 
             ps.playerId, 
             ps.killpoints AS startKillpoints,
-            ps.deads AS startDeads
+            ps.deads AS startDeads,
+            ps.t1Kills AS startT1,
+            ps.t4Kills AS startT4,
+            ps.t5Kills AS startT5
           FROM PlayerSnapshot ps
           JOIN boundaries b 
             ON ps.playerId = b.playerId AND ps.createdAt = b.startDate
@@ -86,20 +93,18 @@ export async function GET(request: Request) {
             ps.playerId,
             ps.killpoints AS endKillpoints,
             ps.deads AS endDeads,
+            ps.t1Kills AS endT1,
+            ps.t4Kills AS endT4,
+            ps.t5Kills AS endT5,
             ps.createdAt,
             ps.name,
             ps.power,
-            ps.killpoints,
             ps.totalKills,
             ps.t45Kills,
             ps.rssGathered,
             ps.rssAssist,
-            ps.t1Kills,
             ps.t2Kills,
             ps.t3Kills,
-            ps.t4Kills,
-            ps.t5Kills,
-            ps.deads,
             ps.helps,
             ps.alliance
           FROM PlayerSnapshot ps
@@ -110,23 +115,36 @@ export async function GET(request: Request) {
           SELECT
             e.*,
             COALESCE(CAST(e.endKillpoints AS INTEGER) - CAST(s.startKillpoints AS INTEGER), 0) AS killpointsGained,
-            COALESCE(CAST(e.endDeads AS INTEGER) - CAST(s.startDeads AS INTEGER), 0) AS deadsGained
+            COALESCE(CAST(e.endDeads AS INTEGER) - CAST(s.startDeads AS INTEGER), 0) AS deadsGained,
+            -- ✅ Killpoints T45 Gained (substituindo GREATEST)
+            COALESCE(
+              (CASE WHEN (e.endT4 - s.startT4) > 0 THEN (e.endT4 - s.startT4) ELSE 0 END) * 10 +
+              (CASE WHEN (e.endT5 - s.startT5) > 0 THEN (e.endT5 - s.startT5) ELSE 0 END) * 20,
+              0
+            ) AS killpointsT45Gained,
+            -- ✅ Killpoints T1 Gained
+            COALESCE(
+              (CASE WHEN (e.endT1 - s.startT1) > 0 THEN (e.endT1 - s.startT1) ELSE 0 END) * 1,
+              0
+            ) AS killpointsT1Gained
           FROM end_snap e
           JOIN start_snap s USING (playerId)
           WHERE (e.endKillpoints - s.startKillpoints) > 0
              OR (e.endDeads - s.startDeads) > 0
         ),
         ranked AS (
-  SELECT j.*, ROW_NUMBER() OVER (ORDER BY ${sortKey} DESC) AS rank
-  FROM joined j
-)
-SELECT *
-FROM ranked
-${search ? `WHERE name LIKE '%${escapedSearch}%'` : ""}
-ORDER BY ${sortKey} DESC
-LIMIT ${limit} OFFSET ${offset};
+          SELECT j.*, ROW_NUMBER() OVER (ORDER BY ${sortKey} DESC) AS rank
+          FROM joined j
+        )
+        SELECT *
+        FROM ranked
+        ${search ? `WHERE name LIKE '%${escapedSearch}%'` : ""}
+        ORDER BY ${sortKey} DESC
+        LIMIT ${limit} OFFSET ${offset};
       `;
-    } else {
+    } 
+    // 🔹 Query sem filtro de datas
+    else {
       playersQuery = `
         WITH first_last AS (
           SELECT
@@ -145,7 +163,10 @@ LIMIT ${limit} OFFSET ${offset};
           SELECT 
             ps.playerId, 
             ps.killpoints AS firstKillpoints,
-            ps.deads AS firstDeads
+            ps.deads AS firstDeads,
+            ps.t1Kills AS firstT1,
+            ps.t4Kills AS firstT4,
+            ps.t5Kills AS firstT5
           FROM PlayerSnapshot ps
           JOIN first_last fl ON ps.playerId = fl.playerId AND ps.createdAt = fl.firstDate
         ),
@@ -153,7 +174,16 @@ LIMIT ${limit} OFFSET ${offset};
           SELECT 
             l.*, 
             COALESCE(l.killpoints - e.firstKillpoints, 0) AS killpointsGained,
-            COALESCE(l.deads - e.firstDeads, 0) AS deadsGained
+            COALESCE(l.deads - e.firstDeads, 0) AS deadsGained,
+            COALESCE(
+              (CASE WHEN (l.t4Kills - e.firstT4) > 0 THEN (l.t4Kills - e.firstT4) ELSE 0 END) * 10 +
+              (CASE WHEN (l.t5Kills - e.firstT5) > 0 THEN (l.t5Kills - e.firstT5) ELSE 0 END) * 20,
+              0
+            ) AS killpointsT45Gained,
+            COALESCE(
+              (CASE WHEN (l.t1Kills - e.firstT1) > 0 THEN (l.t1Kills - e.firstT1) ELSE 0 END) * 1,
+              0
+            ) AS killpointsT1Gained
           FROM latest l
           JOIN earliest e USING(playerId)
         ),
@@ -171,77 +201,9 @@ LIMIT ${limit} OFFSET ${offset};
 
     const latestSnapshots = await prisma.$queryRawUnsafe<any[]>(playersQuery);
 
-    let totalPlayersQuery: string;
-
-    if (isDateRangeFilter && startIso && endIso) {
-      totalPlayersQuery = `
-        SELECT COUNT(*) AS count
-        FROM (
-          WITH all_players AS (
-            SELECT DISTINCT playerId
-            FROM PlayerSnapshot
-          ),
-          date_boundaries AS (
-            SELECT
-              ap.playerId,
-              (SELECT ps1.createdAt
-               FROM PlayerSnapshot ps1
-               WHERE ps1.playerId = ap.playerId
-                 AND ps1.createdAt >= '${startIso}'
-                 AND ps1.createdAt <= '${endIso}'
-               ORDER BY ps1.createdAt ASC
-               LIMIT 1) AS closestStartDate,
-              (SELECT ps2.createdAt
-               FROM PlayerSnapshot ps2
-               WHERE ps2.playerId = ap.playerId
-                 AND ps2.createdAt >= '${startIso}'
-                 AND ps2.createdAt <= '${endIso}'
-               ORDER BY ps2.createdAt DESC
-               LIMIT 1) AS closestEndDate
-            FROM all_players ap
-          ),
-          period_snapshots AS (
-            SELECT
-              db.playerId,
-              ps_start.killpoints AS startKillpoints,
-              ps_end.killpoints AS endKillpoints,
-              ps_end.name
-            FROM date_boundaries db
-            JOIN PlayerSnapshot ps_start ON ps_start.playerId = db.playerId AND ps_start.createdAt = db.closestStartDate
-            JOIN PlayerSnapshot ps_end   ON ps_end.playerId   = db.playerId AND ps_end.createdAt   = db.closestEndDate
-            WHERE db.closestStartDate IS NOT NULL
-              AND db.closestEndDate IS NOT NULL
-          ),
-          period_joined AS (
-            SELECT
-              ps.playerId,
-              ps.name,
-              COALESCE(CAST(ps.endKillpoints AS INTEGER) - CAST(ps.startKillpoints AS INTEGER), 0) AS killpointsGained
-            FROM period_snapshots ps
-            WHERE COALESCE(CAST(ps.endKillpoints AS INTEGER) - CAST(ps.startKillpoints AS INTEGER), 0) > 0
-          )
-          SELECT playerId, name
-          FROM period_joined
-          ${search ? `WHERE name LIKE '%${escapedSearch}%'` : ""}
-        ) sub;
-      `;
-    } else {
-      totalPlayersQuery = `
-        SELECT COUNT(*) AS count
-        FROM (
-          SELECT ps.playerId
-          FROM PlayerSnapshot ps
-          WHERE (ps.playerId, ps.createdAt) IN (
-            SELECT playerId, MAX(createdAt)
-            FROM PlayerSnapshot
-            GROUP BY playerId
-          )
-          ${search ? `AND name LIKE '%${escapedSearch}%'` : ""}
-        ) sub;
-      `;
-    }
-
-    const totalPlayers = await prisma.$queryRawUnsafe<{ count: bigint }[]>(totalPlayersQuery);
+    const totalPlayers = await prisma.$queryRawUnsafe<{ count: bigint }[]>(
+      `SELECT COUNT(DISTINCT playerId) as count FROM PlayerSnapshot;`
+    );
     const total = Number(totalPlayers?.[0]?.count || 0);
     const totalPages = Math.max(1, Math.ceil(total / limit));
 
@@ -253,6 +215,8 @@ LIMIT ${limit} OFFSET ${offset};
       killpoints: serializeValue(p.killpoints),
       killpointsGained: serializeValue(p.killpointsGained) ?? "0",
       deadsGained: Number(serializeValue(p.deadsGained) ?? 0),
+      killpointsT45Gained: Number(serializeValue(p.killpointsT45Gained) ?? 0),
+      killpointsT1Gained: Number(serializeValue(p.killpointsT1Gained) ?? 0),
       totalKills: serializeValue(p.totalKills),
       t45Kills: serializeValue(p.t45Kills),
       rssGathered: serializeValue(p.rssGathered),
@@ -266,10 +230,6 @@ LIMIT ${limit} OFFSET ${offset};
       helps: serializeValue(p.helps),
       alliance: serializeValue(p.alliance),
       lastUpdated: serializeValue(p.createdAt),
-      ...(isDateRangeFilter && p.startKillpoints !== undefined && {
-        periodStartKillpoints: serializeValue(p.startKillpoints),
-        periodEndKillpoints: serializeValue(p.endKillpoints ?? p.killpoints),
-      }),
     }));
 
     return NextResponse.json({
@@ -293,6 +253,9 @@ LIMIT ${limit} OFFSET ${offset};
     });
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: "Erro ao buscar jogadores" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Erro ao buscar jogadores" },
+      { status: 500 }
+    );
   }
 }
