@@ -3,7 +3,6 @@ import prismaKvk2 from "@/lib/prisma-kvk2";
 
 const prisma = prismaKvk2;
 
-// Serializa valores que podem quebrar JSON.stringify (bigint, Date)
 function serializeValue(v: any): any {
   if (v === null || v === undefined) return null;
   if (typeof v === "bigint") return v.toString();
@@ -31,9 +30,10 @@ export async function GET(request: Request) {
     const endDate = searchParams.get("endDate");
     const offset = (page - 1) * limit;
 
-        // Novo parâmetro order (asc | desc)
+    // Novo parâmetro order (asc | desc)
     const orderParam = (searchParams.get("order") || "desc").toLowerCase();
     const orderDirection = orderParam === "asc" ? "ASC" : "DESC";
+
     const sortFieldMap: Record<string, string> = {
       Power: "power",
       Killpoints: "killpoints",
@@ -76,7 +76,8 @@ export async function GET(request: Request) {
             MIN(createdAt) AS startDate,
             MAX(createdAt) AS endDate
           FROM PlayerSnapshot
-          WHERE createdAt BETWEEN '${startIso}' AND '${endIso}'
+          WHERE LENGTH(playerId) >= 8
+            AND createdAt BETWEEN '${startIso}' AND '${endIso}'
           GROUP BY playerId
         ),
         start_snap AS (
@@ -119,15 +120,13 @@ export async function GET(request: Request) {
             e.*,
             COALESCE(CAST(e.endKillpoints AS INTEGER) - CAST(s.startKillpoints AS INTEGER), 0) AS killpointsGained,
             COALESCE(CAST(e.endDeads AS INTEGER) - CAST(s.startDeads AS INTEGER), 0) AS deadsGained,
-            -- ✅ Killpoints T45 Gained (substituindo GREATEST)
             COALESCE(
               (CASE WHEN (e.endT4 - s.startT4) > 0 THEN (e.endT4 - s.startT4) ELSE 0 END) * 10 +
               (CASE WHEN (e.endT5 - s.startT5) > 0 THEN (e.endT5 - s.startT5) ELSE 0 END) * 20,
               0
             ) AS killpointsT45Gained,
-            -- ✅ Killpoints T1 Gained
             COALESCE(
-              (CASE WHEN (e.endT1 - s.startT1) > 0 THEN (e.endT1 - s.startT1) ELSE 0 END) * 1,
+              (CASE WHEN (e.endT1 - s.startT1) > 0 THEN (e.endT1 - s.startT1) ELSE 0 END),
               0
             ) AS killpointsT1Gained
           FROM end_snap e
@@ -155,6 +154,7 @@ export async function GET(request: Request) {
             MIN(ps.createdAt) AS firstDate,
             MAX(ps.createdAt) AS lastDate
           FROM PlayerSnapshot ps
+          WHERE LENGTH(ps.playerId) >= 8
           GROUP BY ps.playerId
         ),
         latest AS (
@@ -184,7 +184,7 @@ export async function GET(request: Request) {
               0
             ) AS killpointsT45Gained,
             COALESCE(
-              (CASE WHEN (l.t1Kills - e.firstT1) > 0 THEN (l.t1Kills - e.firstT1) ELSE 0 END) * 1,
+              (CASE WHEN (l.t1Kills - e.firstT1) > 0 THEN (l.t1Kills - e.firstT1) ELSE 0 END),
               0
             ) AS killpointsT1Gained
           FROM latest l
@@ -205,8 +205,9 @@ export async function GET(request: Request) {
     const latestSnapshots = await prisma.$queryRawUnsafe<any[]>(playersQuery);
 
     const totalPlayers = await prisma.$queryRawUnsafe<{ count: bigint }[]>(
-      `SELECT COUNT(DISTINCT playerId) as count FROM PlayerSnapshot;`
+      `SELECT COUNT(DISTINCT playerId) as count FROM PlayerSnapshot WHERE LENGTH(playerId) >= 8;`
     );
+
     const total = Number(totalPlayers?.[0]?.count || 0);
     const totalPages = Math.max(1, Math.ceil(total / limit));
 
@@ -246,19 +247,13 @@ export async function GET(request: Request) {
         hasPrev: page > 1,
       },
       lastUpdated: serialized[0]?.lastUpdated ?? serializeValue(lastUpdated),
+      order: orderDirection,
       ...(isDateRangeFilter && {
-        dateFilter: {
-          startDate,
-          endDate,
-          isActive: true,
-        },
+        dateFilter: { startDate, endDate, isActive: true },
       }),
     });
   } catch (error) {
     console.error(error);
-    return NextResponse.json(
-      { error: "Erro ao buscar jogadores" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Erro ao buscar jogadores" }, { status: 500 });
   }
 }
