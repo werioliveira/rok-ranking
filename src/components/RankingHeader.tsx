@@ -1,11 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { SortField } from "@/types/player";
-import { Crown, Sword, Trophy, BarChart3, Coins, Loader2, Calendar, Skull } from "lucide-react";
+import { Crown, Sword, Trophy, BarChart3, Coins, Loader2, Calendar, Skull, ArrowDownAZ, ArrowUpAZ } from "lucide-react";
 import { useState } from "react";
 
 interface RankingHeaderProps {
   sortField: SortField;
   onSortChange: (field: SortField) => void;
+  sortOrder: 'asc' | 'desc';
+  onSortOrderChange: (order: 'asc' | 'desc') => void;
   loading?: boolean;
   // Novas props para o filtro de data
   dateRange?: { startDate: string; endDate: string } | null;
@@ -32,6 +34,8 @@ function formatDateUTC(dateStr: string) {
 export const RankingHeader = ({ 
   sortField, 
   onSortChange, 
+  sortOrder,
+  onSortOrderChange,
   loading = false,
   dateRange,
   onDateRangeChange
@@ -111,6 +115,27 @@ export const RankingHeader = ({
               {loading && <Loader2 className="w-3 h-3 animate-spin ml-1" />}
             </div>
           </div>
+          <div className="flex items-center justify-center gap-2 mb-4">
+  <Button
+    variant="outline"
+    size="sm"
+    onClick={() => onSortOrderChange(sortOrder === 'asc' ? 'desc' : 'asc')}
+    disabled={loading}
+    className="flex items-center gap-2"
+  >
+    {sortOrder === 'asc' ? (
+      <>
+        <ArrowDownAZ className="w-4 h-4" />
+        Ascending
+      </>
+    ) : (
+      <>
+        <ArrowUpAZ className="w-4 h-4" />
+        Descending
+      </>
+    )}
+  </Button>
+</div>
         </div>
 
         {/* Sort Controls */}

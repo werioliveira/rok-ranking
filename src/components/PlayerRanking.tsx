@@ -22,7 +22,7 @@ export const PlayerRanking = ({ kvk }: { kvk: string }) => {
   
   // Novo estado para o filtro de data
   const [dateRange, setDateRange] = useState<{ startDate: string; endDate: string } | null>(null);
-
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   // Debounce para a busca
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -36,15 +36,17 @@ export const PlayerRanking = ({ kvk }: { kvk: string }) => {
     page: number, 
     sort?: SortField, 
     search?: string, 
-    dateFilter?: { startDate: string; endDate: string } | null
+    dateFilter?: { startDate: string; endDate: string } | null,
+    order?: 'asc' | 'desc'
   ) => {
     setLoading(true);
+
     try {
       const sortParam = sort || sortField;
       const searchParam = search !== undefined ? search : searchTerm;
       const dateFilterParam = dateFilter !== undefined ? dateFilter : dateRange;
-      
-      let url = `/api/${kvk ? `${kvk}/` : ''}players/latest?page=${page}&limit=12&sortBy=${encodeURIComponent(sortParam)}`;
+      const orderParam = order || sortOrder;
+      let url = `/api/${kvk ? `${kvk}/` : ''}players/latest?page=${page}&limit=12&sortBy=${encodeURIComponent(sortParam)}&order=${orderParam}`;
       
       if (searchParam.trim()) {
         url += `&search=${encodeURIComponent(searchParam.trim())}`;
@@ -71,7 +73,7 @@ export const PlayerRanking = ({ kvk }: { kvk: string }) => {
       setLoading(false);
       setInitialLoad(false);
     }
-  }, [sortField, searchTerm, dateRange]);
+  }, [sortField, searchTerm, dateRange, sortOrder]);
   // Handler para mudança do filtro de data
   const handleDateRangeChange = (range: { startDate: string; endDate: string } | null) => {
     setDateRange(range);
@@ -81,20 +83,20 @@ export const PlayerRanking = ({ kvk }: { kvk: string }) => {
       return;
     }
   };
-function formatDateUTC(dateStr: string) {
-  // dateStr = 'YYYY-MM-DD'
-  const [year, month, day] = dateStr.split("-");
-  return `${day}/${month}/${year.slice(2)}`; // dd/mm/yy
-}
+  function formatDateUTC(dateStr: string) {
+    // dateStr = 'YYYY-MM-DD'
+    const [year, month, day] = dateStr.split("-");
+    return `${day}/${month}/${year.slice(2)}`; // dd/mm/yy
+  }
   // Handler para mudança do campo de ordenação
+
   const handleSortFieldChange = (field: SortField) => {
     setSortField(field);
-    // Se mudou para um campo que não é Killpoints Gained, limpar o filtro de data
+    setSortOrder('desc'); // resetar para padrão
     if (field !== 'Killpoints Gained') {
       setDateRange(null);
     }
   };
-
   useEffect(() => {
     fetchPlayers(currentPage, sortField, searchTerm, dateRange);
   }, [currentPage]);
@@ -107,7 +109,13 @@ function formatDateUTC(dateStr: string) {
       fetchPlayers(1, sortField, searchTerm, dateRange);
     }
   }, [sortField]);
-
+  useEffect(() => {
+    if (currentPage !== 1) {
+      setCurrentPage(1);
+    } else {
+      fetchPlayers(1, sortField, searchTerm, dateRange, sortOrder);
+    }
+  }, [sortOrder]);
   useEffect(() => {
     // Reset para página 1 quando pesquisar
     if (currentPage !== 1) {
@@ -164,13 +172,15 @@ function formatDateUTC(dateStr: string) {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
       <div className="container mx-auto px-4 py-8">
-        <RankingHeader 
-          sortField={sortField} 
-          onSortChange={handleSortFieldChange} 
-          loading={loading}
-          dateRange={dateRange}
-          onDateRangeChange={handleDateRangeChange}
-        />
+<RankingHeader
+  sortField={sortField}
+  sortOrder={sortOrder}
+  onSortChange={handleSortFieldChange}
+  onSortOrderChange={setSortOrder}
+  loading={loading}
+  dateRange={dateRange}
+  onDateRangeChange={handleDateRangeChange}
+/>
         
         {/* Última atualização */}
         {lastUpdated && (

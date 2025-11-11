@@ -31,6 +31,9 @@ export async function GET(request: Request) {
     const endDate = searchParams.get("endDate");
     const offset = (page - 1) * limit;
 
+        // Novo parâmetro order (asc | desc)
+    const orderParam = (searchParams.get("order") || "desc").toLowerCase();
+    const orderDirection = orderParam === "asc" ? "ASC" : "DESC";
     const sortFieldMap: Record<string, string> = {
       Power: "power",
       Killpoints: "killpoints",
@@ -133,13 +136,13 @@ export async function GET(request: Request) {
              OR (e.endDeads - s.startDeads) > 0
         ),
         ranked AS (
-          SELECT j.*, ROW_NUMBER() OVER (ORDER BY ${sortKey} DESC) AS rank
+          SELECT j.*, ROW_NUMBER() OVER (ORDER BY ${sortKey} ${orderDirection}) AS rank
           FROM joined j
         )
         SELECT *
         FROM ranked
         ${search ? `WHERE name LIKE '%${escapedSearch}%'` : ""}
-        ORDER BY ${sortKey} DESC
+        ORDER BY ${sortKey} ${orderDirection}
         LIMIT ${limit} OFFSET ${offset};
       `;
     } 
@@ -188,13 +191,13 @@ export async function GET(request: Request) {
           JOIN earliest e USING(playerId)
         ),
         ranked AS (
-          SELECT j.*, ROW_NUMBER() OVER (ORDER BY ${sortKey} DESC) AS rank
+          SELECT j.*, ROW_NUMBER() OVER (ORDER BY ${sortKey} ${orderDirection}) AS rank
           FROM joined j
         )
         SELECT *
         FROM ranked
         ${search ? `WHERE name LIKE '%${escapedSearch}%'` : ""}
-        ORDER BY ${sortKey} DESC
+        ORDER BY ${sortKey} ${orderDirection}
         LIMIT ${limit} OFFSET ${offset};
       `;
     }
