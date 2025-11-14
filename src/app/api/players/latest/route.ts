@@ -44,6 +44,7 @@ export async function GET(request: Request) {
       "Deads Gained": "deadsGained",
       "Killpoints T45 Gained": "killpointsT45Gained",
       "Killpoints T1 Gained": "killpointsT1Gained",
+      "DKP": "dkp",
     };
     const sortKey = sortFieldMap[sortBy] || "power";
 
@@ -120,6 +121,11 @@ export async function GET(request: Request) {
             e.*,
             COALESCE(CAST(e.endKillpoints AS INTEGER) - CAST(s.startKillpoints AS INTEGER), 0) AS killpointsGained,
             COALESCE(CAST(e.endDeads AS INTEGER) - CAST(s.startDeads AS INTEGER), 0) AS deadsGained,
+          (COALESCE(
+            (CASE WHEN (e.endT4 - s.startT4) > 0 THEN (e.endT4 - s.startT4) ELSE 0 END) * 10 +
+            (CASE WHEN (e.endT5 - s.startT5) > 0 THEN (e.endT5 - s.startT5) ELSE 0 END) * 30 +
+            (CASE WHEN (e.endDeads - s.startDeads) > 0 THEN (e.endDeads - s.startDeads) ELSE 0 END) * 80
+          , 0)) AS dkp,
             COALESCE(
               (CASE WHEN (e.endT4 - s.startT4) > 0 THEN (e.endT4 - s.startT4) ELSE 0 END),
               0
@@ -186,6 +192,11 @@ export async function GET(request: Request) {
             l.*, 
             COALESCE(l.killpoints - e.firstKillpoints, 0) AS killpointsGained,
             COALESCE(l.deads - e.firstDeads, 0) AS deadsGained,
+          (COALESCE(
+            (CASE WHEN (l.t4Kills - e.firstT4) > 0 THEN (l.t4Kills - e.firstT4) ELSE 0 END) * 10 +
+            (CASE WHEN (l.t5Kills - e.firstT5) > 0 THEN (l.t5Kills - e.firstT5) ELSE 0 END) * 30 +
+            (CASE WHEN (l.deads - e.firstDeads) > 0 THEN (l.deads - e.firstDeads) ELSE 0 END) * 80
+          , 0)) AS dkp,
            COALESCE(
               (CASE WHEN (l.t4Kills - e.firstT4) > 0 THEN (l.t4Kills - e.firstT4) ELSE 0 END),
               0

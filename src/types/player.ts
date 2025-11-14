@@ -30,4 +30,4 @@ export interface Player {
 }
 // Adicione ao seu types/player.ts existente
 export interface PlayerResponse extends PaginatedResponse<Player> {}
-export type SortField = 'Power' | 'Killpoints' | 'Total Kills' | 'T45 Kills' | 'Rss Gathered' | 'Killpoints Gained' | 'Deads Gained' | 'Killpoints T45 Gained' | 'Killpoints T1 Gained';
+export type SortField = 'Power' | 'Killpoints' | 'Total Kills' | 'T45 Kills' | 'Rss Gathered' | 'Killpoints Gained' | 'Deads Gained' | 'Killpoints T45 Gained' | 'Killpoints T1 Gained' | 'DKP';

@@ -256,7 +256,11 @@ export const PlayerCard = ({ player, rank, kvk }: PlayerCardProps) => {
                   </>
                 );
               })()}
-                            {(() => {
+
+            </div>
+            
+          )}
+                       {(() => {
   const t4 = Number(player.t4KillsGained) || 0;
   const t5 = Number(player.t5KillsGained) || 0;
   const deads = Number(player.deadsGained) || 0;
@@ -283,9 +287,6 @@ export const PlayerCard = ({ player, rank, kvk }: PlayerCardProps) => {
     </div>
   );
 })()}
-            </div>
-            
-          )}
         </div>
       </div>
     </Card>
