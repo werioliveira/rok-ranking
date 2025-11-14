@@ -9,7 +9,16 @@ import {
   Users,
   ArrowRight,
   TrendingUp,
+  Flame,
+  Skull,
+  Swords,
 } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import Link from "next/link";
 
 interface PlayerCardProps {
@@ -18,18 +27,13 @@ interface PlayerCardProps {
   kvk?: string;
 }
 
-const formatNumber = (num: number | string | bigint): string => {
-  let n: number;
-  if (typeof num === "string") n = parseInt(num, 10);
-  else if (typeof num === "bigint") n = Number(num);
-  else n = num;
-  if (isNaN(n)) return "0";
+export function formatNumber(n: number) {
+  if (n >= 1_000_000_000) return (n / 1_000_000_000).toFixed(2) + "B";
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(2) + "M";
+  if (n >= 1_000) return (n / 1_000).toFixed(2) + "K";
 
-  if (n >= 1_000_000_000) return (n / 1_000_000_000).toFixed(1) + "B";
-  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + "M";
-  if (n >= 1_000) return (n / 1_000).toFixed(1) + "K";
   return n.toString();
-};
+}
 
 const getRankIcon = (rank: number) => {
   if (rank === 1) return <Crown className="w-5 h-5 text-gold" />;
@@ -260,7 +264,7 @@ export const PlayerCard = ({ player, rank, kvk }: PlayerCardProps) => {
             </div>
             
           )}
-                       {(() => {
+{(() => {
   const t4 = Number(player.t4KillsGained) || 0;
   const t5 = Number(player.t5KillsGained) || 0;
   const deads = Number(player.deadsGained) || 0;
@@ -275,16 +279,78 @@ export const PlayerCard = ({ player, rank, kvk }: PlayerCardProps) => {
       : "text-muted-foreground";
 
   return (
-    <div className="flex items-center justify-center gap-2 text-xs">
-      <TrendingUp
-        className={`w-3 h-3 ${color} ${dkp < 0 ? "rotate-180" : ""}`}
-      />
-      <span className="text-muted-foreground">DKP:</span>
-      <span className={`font-semibold ${color}`}>
-        {dkp > 0 ? "+" : ""}
-        {formatNumber(dkp)}
-      </span>
-    </div>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="flex items-center justify-center gap-2 text-xs cursor-help">
+            <TrendingUp
+              className={`w-3 h-3 ${color} ${dkp < 0 ? "rotate-180" : ""}`}
+            />
+            <span className="text-muted-foreground">DKP:</span>
+            <span className={`font-semibold ${color}`}>
+              {dkp > 0 ? "+" : ""}
+              {formatNumber(dkp)}
+            </span>
+          </div>
+        </TooltipTrigger>
+
+        <TooltipContent className="p-4 bg-neutral-900 rounded-xl shadow-xl border border-neutral-700">
+          <div className="text-xs space-y-3">
+            <p className="font-semibold text-purple-300 text-sm">
+              DKP Breakdown
+            </p>
+
+            {/* GRID LIST */}
+            <div className="grid grid-cols-3 gap-3 text-neutral-300">
+
+              {/* T4 */}
+              <div className="flex flex-col items-center justify-center p-2 rounded-lg bg-neutral-800/60 border border-neutral-700/50">
+                <Swords className="w-4 h-4 text-blue-300 mb-1" />
+                <span className="text-[10px] text-neutral-400">T4 Kills</span>
+                <span className="font-semibold text-neutral-200 text-sm">
+                  {t4.toLocaleString()}
+                </span>
+                <span className="text-[10px] text-neutral-500">
+                  × 10
+                </span>
+              </div>
+
+              {/* T5 */}
+              <div className="flex flex-col items-center justify-center p-2 rounded-lg bg-neutral-800/60 border border-neutral-700/50">
+                <Flame className="w-4 h-4 text-orange-300 mb-1" />
+                <span className="text-[10px] text-neutral-400">T5 Kills</span>
+                <span className="font-semibold text-neutral-200 text-sm">
+                  {t5.toLocaleString()}
+                </span>
+                <span className="text-[10px] text-neutral-500">
+                  × 30
+                </span>
+              </div>
+
+              {/* DEADS */}
+              <div className="flex flex-col items-center justify-center p-2 rounded-lg bg-neutral-800/60 border border-neutral-700/50">
+                <Skull className="w-4 h-4 text-red-300 mb-1" />
+                <span className="text-[10px] text-neutral-400">Deads</span>
+                <span className="font-semibold text-neutral-200 text-sm">
+                  {deads.toLocaleString()}
+                </span>
+                <span className="text-[10px] text-neutral-500">
+                  × 80
+                </span>
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="h-px w-full bg-neutral-700/70" />
+
+            {/* TOTAL */}
+            <p className="text-sm font-semibold text-purple-300 text-center">
+              Total DKP: {dkp.toLocaleString()}
+            </p>
+          </div>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 })()}
         </div>

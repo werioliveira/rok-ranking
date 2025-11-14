@@ -30,7 +30,6 @@ export async function GET(request: Request) {
     const endDate = searchParams.get("endDate");
     const offset = (page - 1) * limit;
 
-    // Novo parâmetro order (asc | desc)
     const orderParam = (searchParams.get("order") || "desc").toLowerCase();
     const orderDirection = orderParam === "asc" ? "ASC" : "DESC";
 
@@ -44,17 +43,14 @@ export async function GET(request: Request) {
       "Deads Gained": "deadsGained",
       "Killpoints T45 Gained": "killpointsT45Gained",
       "Killpoints T1 Gained": "killpointsT1Gained",
-      "DKP": "dkp",
+      DKP: "dkp",
     };
     const sortKey = sortFieldMap[sortBy] || "power";
 
     const escapedSearch = search.replace(/'/g, "''");
 
     const isDateRangeFilter =
-      (sortBy === "Killpoints Gained" ||
-        sortBy === "Deads Gained" ||
-        sortBy === "Killpoints T45 Gained" ||
-        sortBy === "Killpoints T1 Gained") &&
+      ["Killpoints Gained", "Deads Gained", "Killpoints T45 Gained", "Killpoints T1 Gained"].includes(sortBy) &&
       startDate &&
       endDate;
 
@@ -67,163 +63,144 @@ export async function GET(request: Request) {
     const endIso = endDate ? toUTCEpoch(endDate, true) : null;
 
     let playersQuery: string;
+    // Detecta se busca é só números (ID)
+    const searchIsNumeric = /^\d+$/.test(search);
 
-    // 🔹 Query com filtro de datas
+    // Gera filtro
+    const searchFilter = search
+      ? searchIsNumeric
+        ? `WHERE playerId = '${escapedSearch}'`
+        : `WHERE name LIKE '%${escapedSearch}%'`
+      : "";
+    // ======================================================
+    //  QUERY COM FILTRO DE DATAS (com ROW_NUMBER dedupe)
+    // ======================================================
     if (isDateRangeFilter && startIso && endIso) {
       playersQuery = `
-        WITH boundaries AS (
+        WITH snaps AS (
           SELECT
-            playerId,
-            MIN(createdAt) AS startDate,
-            MAX(createdAt) AS endDate
-          FROM PlayerSnapshot
-          WHERE LENGTH(playerId) >= 8
-            AND createdAt BETWEEN '${startIso}' AND '${endIso}'
-          GROUP BY playerId
+            ps.*,
+            ROW_NUMBER() OVER (PARTITION BY ps.playerId ORDER BY ps.createdAt ASC) AS rn_first,
+            ROW_NUMBER() OVER (PARTITION BY ps.playerId ORDER BY ps.createdAt DESC) AS rn_last
+          FROM PlayerSnapshot ps
+          WHERE LENGTH(ps.playerId) >= 8
+            AND ps.createdAt BETWEEN '${startIso}' AND '${endIso}'
         ),
+
         start_snap AS (
-          SELECT 
-            ps.playerId, 
-            ps.killpoints AS startKillpoints,
-            ps.deads AS startDeads,
-            ps.t1Kills AS startT1,
-            ps.t4Kills AS startT4,
-            ps.t5Kills AS startT5
-          FROM PlayerSnapshot ps
-          JOIN boundaries b 
-            ON ps.playerId = b.playerId AND ps.createdAt = b.startDate
+          SELECT * FROM snaps WHERE rn_first = 1
         ),
+
         end_snap AS (
-          SELECT 
-            ps.playerId,
-            ps.killpoints AS endKillpoints,
-            ps.deads AS endDeads,
-            ps.t1Kills AS endT1,
-            ps.t4Kills AS endT4,
-            ps.t5Kills AS endT5,
-            ps.createdAt,
-            ps.name,
-            ps.power,
-            ps.totalKills,
-            ps.t45Kills,
-            ps.rssGathered,
-            ps.rssAssist,
-            ps.t2Kills,
-            ps.t3Kills,
-            ps.helps,
-            ps.alliance
-          FROM PlayerSnapshot ps
-          JOIN boundaries b 
-            ON ps.playerId = b.playerId AND ps.createdAt = b.endDate
+          SELECT * FROM snaps WHERE rn_last = 1
         ),
+
         joined AS (
           SELECT
             e.*,
-            COALESCE(CAST(e.endKillpoints AS INTEGER) - CAST(s.startKillpoints AS INTEGER), 0) AS killpointsGained,
-            COALESCE(CAST(e.endDeads AS INTEGER) - CAST(s.startDeads AS INTEGER), 0) AS deadsGained,
-          (COALESCE(
-            (CASE WHEN (e.endT4 - s.startT4) > 0 THEN (e.endT4 - s.startT4) ELSE 0 END) * 10 +
-            (CASE WHEN (e.endT5 - s.startT5) > 0 THEN (e.endT5 - s.startT5) ELSE 0 END) * 30 +
-            (CASE WHEN (e.endDeads - s.startDeads) > 0 THEN (e.endDeads - s.startDeads) ELSE 0 END) * 80
-          , 0)) AS dkp,
-            COALESCE(
-              (CASE WHEN (e.endT4 - s.startT4) > 0 THEN (e.endT4 - s.startT4) ELSE 0 END),
-              0
-            ) AS t4KillsGained,
-            COALESCE(
-              (CASE WHEN (e.endT5 - s.startT5) > 0 THEN (e.endT5 - s.startT5) ELSE 0 END),
-              0
-            ) AS t5KillsGained,
-            COALESCE(
-              (CASE WHEN (e.endT4 - s.startT4) > 0 THEN (e.endT4 - s.startT4) ELSE 0 END) * 10 +
-              (CASE WHEN (e.endT5 - s.startT5) > 0 THEN (e.endT5 - s.startT5) ELSE 0 END) * 20,
-              0
+            (e.killpoints - s.killpoints) AS killpointsGained,
+            (e.deads - s.deads) AS deadsGained,
+
+            /* DKP */
+            (
+              ((CASE WHEN e.t4Kills > s.t4Kills THEN e.t4Kills - s.t4Kills ELSE 0 END) * 10) +
+              ((CASE WHEN e.t5Kills > s.t5Kills THEN e.t5Kills - s.t5Kills ELSE 0 END) * 30) +
+              ((CASE WHEN e.deads > s.deads THEN e.deads - s.deads ELSE 0 END) * 80)
+            ) AS dkp,
+
+            /* T45 Gains */
+            (CASE WHEN e.t4Kills > s.t4Kills THEN e.t4Kills - s.t4Kills ELSE 0 END) AS t4KillsGained,
+            (CASE WHEN e.t5Kills > s.t5Kills THEN e.t5Kills - s.t5Kills ELSE 0 END) AS t5KillsGained,
+
+            /* Killpoints from T4+T5 */
+            (
+              ((CASE WHEN e.t4Kills > s.t4Kills THEN e.t4Kills - s.t4Kills ELSE 0 END) * 10) +
+              ((CASE WHEN e.t5Kills > s.t5Kills THEN e.t5Kills - s.t5Kills ELSE 0 END) * 20)
             ) AS killpointsT45Gained,
-            COALESCE(
-              (CASE WHEN (e.endT1 - s.startT1) > 0 THEN (e.endT1 - s.startT1) ELSE 0 END),
-              0
-            ) AS killpointsT1Gained
+
+            /* T1 kills gained */
+            (CASE WHEN e.t1Kills > s.t1Kills THEN e.t1Kills - s.t1Kills ELSE 0 END) AS killpointsT1Gained
+
           FROM end_snap e
           JOIN start_snap s USING (playerId)
-          WHERE (e.endKillpoints - s.startKillpoints) > 0
-             OR (e.endDeads - s.startDeads) > 0
         ),
+
         ranked AS (
           SELECT j.*, ROW_NUMBER() OVER (ORDER BY ${sortKey} ${orderDirection}) AS rank
           FROM joined j
         )
-        SELECT *
-        FROM ranked
-        ${search ? `WHERE name LIKE '%${escapedSearch}%'` : ""}
-        ORDER BY ${sortKey} ${orderDirection}
-        LIMIT ${limit} OFFSET ${offset};
+
+      SELECT *
+      FROM ranked
+      ${searchFilter}
+      ORDER BY ${sortKey} ${orderDirection}
+      LIMIT ${limit} OFFSET ${offset};
       `;
-    } 
-    // 🔹 Query sem filtro de datas
+    }
+
+    // ======================================================
+    //  QUERY SEM FILTRO DE DATAS (com ROW_NUMBER dedupe REAL)
+    // ======================================================
     else {
       playersQuery = `
-        WITH first_last AS (
+        WITH snaps AS (
           SELECT
-            ps.playerId,
-            MIN(ps.createdAt) AS firstDate,
-            MAX(ps.createdAt) AS lastDate
+            ps.*,
+            ROW_NUMBER() OVER (PARTITION BY ps.playerId ORDER BY ps.createdAt DESC) AS rn_latest,
+            ROW_NUMBER() OVER (PARTITION BY ps.playerId ORDER BY ps.createdAt ASC) AS rn_earliest
           FROM PlayerSnapshot ps
           WHERE LENGTH(ps.playerId) >= 8
-          GROUP BY ps.playerId
         ),
+
         latest AS (
-          SELECT ps.*
-          FROM PlayerSnapshot ps
-          JOIN first_last fl ON ps.playerId = fl.playerId AND ps.createdAt = fl.lastDate
+          SELECT * FROM snaps WHERE rn_latest = 1
         ),
+
         earliest AS (
-          SELECT 
-            ps.playerId, 
-            ps.killpoints AS firstKillpoints,
-            ps.deads AS firstDeads,
-            ps.t1Kills AS firstT1,
-            ps.t4Kills AS firstT4,
-            ps.t5Kills AS firstT5
-          FROM PlayerSnapshot ps
-          JOIN first_last fl ON ps.playerId = fl.playerId AND ps.createdAt = fl.firstDate
+          SELECT
+            playerId,
+            killpoints AS firstKillpoints,
+            deads     AS firstDeads,
+            t1Kills   AS firstT1,
+            t4Kills   AS firstT4,
+            t5Kills   AS firstT5
+          FROM snaps WHERE rn_earliest = 1
         ),
+
         joined AS (
-          SELECT 
-            l.*, 
-            COALESCE(l.killpoints - e.firstKillpoints, 0) AS killpointsGained,
-            COALESCE(l.deads - e.firstDeads, 0) AS deadsGained,
-          (COALESCE(
-            (CASE WHEN (l.t4Kills - e.firstT4) > 0 THEN (l.t4Kills - e.firstT4) ELSE 0 END) * 10 +
-            (CASE WHEN (l.t5Kills - e.firstT5) > 0 THEN (l.t5Kills - e.firstT5) ELSE 0 END) * 30 +
-            (CASE WHEN (l.deads - e.firstDeads) > 0 THEN (l.deads - e.firstDeads) ELSE 0 END) * 80
-          , 0)) AS dkp,
-           COALESCE(
-              (CASE WHEN (l.t4Kills - e.firstT4) > 0 THEN (l.t4Kills - e.firstT4) ELSE 0 END),
-              0
-            ) AS t4KillsGained,
-            COALESCE(
-              (CASE WHEN (l.t5Kills - e.firstT5) > 0 THEN (l.t5Kills - e.firstT5) ELSE 0 END),
-              0
-            ) AS t5KillsGained,
-            COALESCE(
-              (CASE WHEN (l.t4Kills - e.firstT4) > 0 THEN (l.t4Kills - e.firstT4) ELSE 0 END) * 10 +
-              (CASE WHEN (l.t5Kills - e.firstT5) > 0 THEN (l.t5Kills - e.firstT5) ELSE 0 END) * 20,
-              0
+          SELECT
+            l.*,
+            (l.killpoints - e.firstKillpoints) AS killpointsGained,
+            (l.deads - e.firstDeads) AS deadsGained,
+
+            (
+              ((CASE WHEN l.t4Kills > e.firstT4 THEN l.t4Kills - e.firstT4 ELSE 0 END) * 10) +
+              ((CASE WHEN l.t5Kills > e.firstT5 THEN l.t5Kills - e.firstT5 ELSE 0 END) * 30) +
+              ((CASE WHEN l.deads > e.firstDeads THEN l.deads - e.firstDeads ELSE 0 END) * 80)
+            ) AS dkp,
+
+            (CASE WHEN l.t4Kills > e.firstT4 THEN l.t4Kills - e.firstT4 ELSE 0 END) AS t4KillsGained,
+            (CASE WHEN l.t5Kills > e.firstT5 THEN l.t5Kills - e.firstT5 ELSE 0 END) AS t5KillsGained,
+
+            (
+              ((CASE WHEN l.t4Kills > e.firstT4 THEN l.t4Kills - e.firstT4 ELSE 0 END) * 10) +
+              ((CASE WHEN l.t5Kills > e.firstT5 THEN l.t5Kills - e.firstT5 ELSE 0 END) * 20)
             ) AS killpointsT45Gained,
-            COALESCE(
-              (CASE WHEN (l.t1Kills - e.firstT1) > 0 THEN (l.t1Kills - e.firstT1) ELSE 0 END),
-              0
-            ) AS killpointsT1Gained
+
+            (CASE WHEN l.t1Kills > e.firstT1 THEN l.t1Kills - e.firstT1 ELSE 0 END) AS killpointsT1Gained
+
           FROM latest l
-          JOIN earliest e USING(playerId)
+          JOIN earliest e USING (playerId)
         ),
+
         ranked AS (
           SELECT j.*, ROW_NUMBER() OVER (ORDER BY ${sortKey} ${orderDirection}) AS rank
           FROM joined j
         )
+
         SELECT *
         FROM ranked
-        ${search ? `WHERE name LIKE '%${escapedSearch}%'` : ""}
+        ${searchFilter}
         ORDER BY ${sortKey} ${orderDirection}
         LIMIT ${limit} OFFSET ${offset};
       `;

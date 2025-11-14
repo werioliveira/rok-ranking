@@ -5,13 +5,14 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export const formatNumber = (num: number) => {
-    if (num >= 1e9) return (num / 1e9).toFixed(1) + 'B';
-    if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
-    if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K';
-    return num.toString();
-  };
 
+export function formatNumber(n: number) {
+  if (n >= 1_000_000_000) return (n / 1_000_000_000).toFixed(2) + "B";
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(2) + "M";
+  if (n >= 1_000) return (n / 1_000).toFixed(2) + "K";
+
+  return n.toString();
+}
   export const formatDelta = (delta: number, showSign: boolean = true) => {
     const sign = showSign ? (delta > 0 ? '+' : delta < 0 ? '' : '') : '';
     return `${sign}${formatNumber(Math.abs(delta))}`;
