@@ -9,6 +9,8 @@ export interface Player {
   rank?: number // Nova propriedade
   killpoints: number
   killpointsGained: string; // Nova propriedade
+  t4KillsGained: string; // Nova propriedade
+  t5KillsGained: string; // Nova propriedade
   deads: number
   t1Kills: number
   t2Kills: number

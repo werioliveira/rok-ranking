@@ -121,6 +121,14 @@ export async function GET(request: Request) {
             COALESCE(CAST(e.endKillpoints AS INTEGER) - CAST(s.startKillpoints AS INTEGER), 0) AS killpointsGained,
             COALESCE(CAST(e.endDeads AS INTEGER) - CAST(s.startDeads AS INTEGER), 0) AS deadsGained,
             COALESCE(
+              (CASE WHEN (e.endT4 - s.startT4) > 0 THEN (e.endT4 - s.startT4) ELSE 0 END),
+              0
+            ) AS t4KillsGained,
+            COALESCE(
+              (CASE WHEN (e.endT5 - s.startT5) > 0 THEN (e.endT5 - s.startT5) ELSE 0 END),
+              0
+            ) AS t5KillsGained,
+            COALESCE(
               (CASE WHEN (e.endT4 - s.startT4) > 0 THEN (e.endT4 - s.startT4) ELSE 0 END) * 10 +
               (CASE WHEN (e.endT5 - s.startT5) > 0 THEN (e.endT5 - s.startT5) ELSE 0 END) * 20,
               0
@@ -178,6 +186,14 @@ export async function GET(request: Request) {
             l.*, 
             COALESCE(l.killpoints - e.firstKillpoints, 0) AS killpointsGained,
             COALESCE(l.deads - e.firstDeads, 0) AS deadsGained,
+           COALESCE(
+              (CASE WHEN (l.t4Kills - e.firstT4) > 0 THEN (l.t4Kills - e.firstT4) ELSE 0 END),
+              0
+            ) AS t4KillsGained,
+            COALESCE(
+              (CASE WHEN (l.t5Kills - e.firstT5) > 0 THEN (l.t5Kills - e.firstT5) ELSE 0 END),
+              0
+            ) AS t5KillsGained,
             COALESCE(
               (CASE WHEN (l.t4Kills - e.firstT4) > 0 THEN (l.t4Kills - e.firstT4) ELSE 0 END) * 10 +
               (CASE WHEN (l.t5Kills - e.firstT5) > 0 THEN (l.t5Kills - e.firstT5) ELSE 0 END) * 20,
@@ -221,6 +237,8 @@ export async function GET(request: Request) {
       deadsGained: Number(serializeValue(p.deadsGained) ?? 0),
       killpointsT45Gained: Number(serializeValue(p.killpointsT45Gained) ?? 0),
       killpointsT1Gained: Number(serializeValue(p.killpointsT1Gained) ?? 0),
+      t4KillsGained: Number(serializeValue(p.t4KillsGained) ?? 0),
+      t5KillsGained: Number(serializeValue(p.t5KillsGained) ?? 0),
       totalKills: serializeValue(p.totalKills),
       t45Kills: serializeValue(p.t45Kills),
       rssGathered: serializeValue(p.rssGathered),

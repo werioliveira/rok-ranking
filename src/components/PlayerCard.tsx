@@ -256,7 +256,35 @@ export const PlayerCard = ({ player, rank, kvk }: PlayerCardProps) => {
                   </>
                 );
               })()}
+                            {(() => {
+  const t4 = Number(player.t4KillsGained) || 0;
+  const t5 = Number(player.t5KillsGained) || 0;
+  const deads = Number(player.deadsGained) || 0;
+
+  const dkp = t4 * 10 + t5 * 30 + deads * 80;
+
+  const color =
+    dkp > 0
+      ? "text-purple-400"
+      : dkp < 0
+      ? "text-red-500"
+      : "text-muted-foreground";
+
+  return (
+    <div className="flex items-center justify-center gap-2 text-xs">
+      <TrendingUp
+        className={`w-3 h-3 ${color} ${dkp < 0 ? "rotate-180" : ""}`}
+      />
+      <span className="text-muted-foreground">DKP:</span>
+      <span className={`font-semibold ${color}`}>
+        {dkp > 0 ? "+" : ""}
+        {formatNumber(dkp)}
+      </span>
+    </div>
+  );
+})()}
             </div>
+            
           )}
         </div>
       </div>
