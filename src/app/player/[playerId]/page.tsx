@@ -634,10 +634,10 @@ function getDeltaColor(value: number, soft = false) {
                 <h4 className="text-sm font-semibold text-muted-foreground">Period Growth:</h4>
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   {[
-                    { label: 'T1', value: selectedKillMetric === 'kills' ? periodComparison.deltas.t1Kills : periodComparison.deltas.t1Kills * 1 },
+                    { label: 'T1', value: selectedKillMetric === 'kills' ? periodComparison.deltas.t1Kills : periodComparison.deltas.t1Kills * 0.2 },
                     { label: 'T2', value: selectedKillMetric === 'kills' ? periodComparison.deltas.t2Kills : periodComparison.deltas.t2Kills * 2 },
                     { label: 'T3', value: selectedKillMetric === 'kills' ? periodComparison.deltas.t3Kills : periodComparison.deltas.t3Kills * 4 },
-                    { label: 'T4', value: selectedKillMetric === 'kills' ? periodComparison.deltas.t4Kills : periodComparison.deltas.t4Kills * 10 },
+                    { label: 'T4', value: selectedKillMetric === 'kills' ? periodComparison.deltas.t4Kills : periodComparison.deltas.t4Kills * 0.96 },
                     { label: 'T5', value: selectedKillMetric === 'kills' ? periodComparison.deltas.t5Kills : periodComparison.deltas.t5Kills * 20 },
                     { label: 'T4+T5', value: selectedKillMetric === 'kills' ? periodComparison.deltas.t45Kills : periodComparison.deltas.t45Kills * 10 },
                     { label: 'Ranged', value: selectedKillMetric === 'kills' ? periodComparison.deltas.ranged : periodComparison.deltas.ranged * 5 }
