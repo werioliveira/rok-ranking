@@ -8,7 +8,7 @@ import { RankingHeader } from "./RankingHeader";
 import { PaginationPages } from "./PaginationPages";
 import { Loader2, Search, X } from "lucide-react";
 
-export const PlayerRanking = ({ kvk }: { kvk: string }) => {
+export const PlayerRanking = ({ kvk }: { kvk?: string }) => {
 
   const [players, setPlayers] = useState<Player[]>([]);
   const [sortField, setSortField] = useState<SortField>("Power");
