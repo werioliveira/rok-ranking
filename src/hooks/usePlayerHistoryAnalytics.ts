@@ -267,10 +267,10 @@ export const usePlayerHistoryAnalytics = (
     if (!current) return [];
 
     return [
-      { tier: 'T1', kills: toNum(current.t1Kills), killpoints: toNum(current.t1Kills) * 1, gainedKills: deltas.t1Kills, gainedKillpoints: deltas.t1Kills * 1, fill: '#8884d8' },
+      { tier: 'T1', kills: toNum(current.t1Kills), killpoints: toNum(current.t1Kills) * 0.2, gainedKills: deltas.t1Kills, gainedKillpoints: deltas.t1Kills * 0.2, fill: '#8884d8' },
       { tier: 'T2', kills: toNum(current.t2Kills), killpoints: toNum(current.t2Kills) * 2, gainedKills: deltas.t2Kills, gainedKillpoints: deltas.t2Kills * 2, fill: '#82ca9d' },
       { tier: 'T3', kills: toNum(current.t3Kills), killpoints: toNum(current.t3Kills) * 4, gainedKills: deltas.t3Kills, gainedKillpoints: deltas.t3Kills * 4, fill: '#ffc658' },
-      { tier: 'T4', kills: toNum(current.t4Kills), killpoints: toNum(current.t4Kills) * 10, gainedKills: deltas.t4Kills, gainedKillpoints: deltas.t4Kills * 10, fill: '#ff7c7c' },
+      { tier: 'T4', kills: toNum(current.t4Kills), killpoints: toNum(current.t4Kills) * 0.96, gainedKills: deltas.t4Kills, gainedKillpoints: deltas.t4Kills * 0.96, fill: '#ff7c7c' },
       { tier: 'T5', kills: toNum(current.t5Kills), killpoints: toNum(current.t5Kills) * 20, gainedKills: deltas.t5Kills, gainedKillpoints: deltas.t5Kills * 20, fill: '#8dd1e1' }
     ];
   }, [periodComparison, filteredCurrentData, playerData?.currentData]);

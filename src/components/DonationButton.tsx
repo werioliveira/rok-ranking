@@ -7,9 +7,10 @@ export default function DonationButton() {
       target="_blank"
       rel="noopener noreferrer"
       className="fixed bottom-3 right-3 z-50 flex items-center gap-2 
-                 bg-pink-500 hover:bg-pink-600 text-white 
-                 px-3 py-2 md:px-4 md:py-2 
-                 rounded-full shadow-lg transition-all duration-300"
+           bg-pink-500 hover:bg-pink-600 text-white 
+           px-3 py-2 md:px-4 md:py-2 
+           rounded-full shadow-lg transition-all duration-300
+           max-w-[90vw] overflow-hidden"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"

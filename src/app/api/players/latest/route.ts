@@ -187,7 +187,7 @@ export async function GET(request: Request) {
               ((CASE WHEN l.t5Kills > e.firstT5 THEN l.t5Kills - e.firstT5 ELSE 0 END) * 20)
             ) AS killpointsT45Gained,
 
-            (CASE WHEN l.t1Kills > e.firstT1 THEN l.t1Kills - e.firstT1 ELSE 0 END) AS killpointsT1Gained
+            ROUND((CASE WHEN l.t1Kills > e.firstT1 THEN (l.t1Kills - e.firstT1) * 0.2 ELSE 0 END), 0) AS killpointsT1Gained
 
           FROM latest l
           JOIN earliest e USING (playerId)
