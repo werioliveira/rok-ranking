@@ -5,7 +5,7 @@ import * as Ackee from "ackee-tracker";
 export default function Analytics() {
   useEffect(() => {
     try {
-      const instance = Ackee.create("https://analytic.werioliveira.shop", {
+      const instance = Ackee.create(`${process.env.ACKEE_URL}`, {
         detailed: true,
         ignoreLocalhost: false,
         ignoreOwnVisits: false,

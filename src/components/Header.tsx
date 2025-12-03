@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ChevronDown, Home, Sword, Globe, Menu, X } from "lucide-react";
+import { ChevronDown, Home, Sword, Globe, Menu, X, BookText } from "lucide-react";
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
@@ -10,7 +10,8 @@ export default function Header() {
 
   return (
     <header className="w-full bg-card border-b border-muted py-3">
-      <div className="max-w-screen-lg mx-auto px-4 flex justify-between items-center overflow-x-hidden">
+      <div className="max-w-screen-lg mx-auto px-4 flex justify-between items-center">
+
 
         {/* LOGO */}
         <Link
@@ -31,11 +32,11 @@ export default function Header() {
           </Link>
 
           <Link
-            href="/matchmaking"
+            href="/message"
             className="flex items-center text-card-foreground hover:text-primary transition-colors"
           >
-            <Globe className="w-4 h-4 mr-1" />
-            Matchmaking
+            <BookText className="w-4 h-4 mr-1" />
+            Email Builder
           </Link>
 
           <div className="relative">
