@@ -1,36 +1,214 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Rok Ranking
 
-## Getting Started
+A web system for managing Rise of Kingdoms rankings using **Next.js + Prisma + SQLite**. Simple to install, lightweight, and suitable for personal use, alliances, or small communities.
 
-First, run the development server:
+---
+
+## 📌 Table of Contents
+
+* [Overview](#overview)
+* [Features](#features)
+* [Tech Stack](#tech-stack)
+* [Requirements](#requirements)
+* [Installation](#installation)
+* [Environment Configuration](#environment-configuration)
+* [Database / Prisma](#database--prisma)
+* [Available Scripts](#available-scripts)
+* [Running the Project](#running-the-project)
+* [Upload Security (UPLOAD_SECRET)](#upload-security-upload_secret)
+* [Deployment & Production Notes](#deployment--production-notes)
+* [Contributing](#contributing)
+
+---
+
+## 📖 Overview
+
+**Rok Ranking** is a web-based ranking system designed for Rise of Kingdoms. It provides a clean interface for storing and displaying ranking data.
+
+Built with:
+
+* **Next.js** for the frontend and API routes
+* **Prisma ORM** for database interaction
+* **SQLite** for simple local and server storage
+
+---
+
+## ✨ Features
+
+✔ Ranking management
+✔ Protected data uploads
+✔ Fast setup using SQLite
+✔ Next.js application structure
+✔ Works locally or on servers easily
+
+---
+
+## 🔧 Tech Stack
+
+* **Next.js 15**
+* **TypeScript**
+* **Prisma ORM**
+* **SQLite**
+* **Node.js**
+
+---
+
+## 📦 Requirements
+
+Before installing, make sure you have:
+
+* **Node.js** (v18 or newer recommended)
+* **npm** or **yarn**
+* **Git**
+
+---
+
+## 📥 Installation
+
+Clone the repository:
+
+```bash
+git clone https://github.com/werioliveira/rok-ranking.git
+cd rok-ranking
+```
+
+Install dependencies:
+
+```bash
+npm install
+# or
+yarn install
+```
+
+---
+
+## ⚙ Environment Configuration
+
+The project requires only **one environment variable**.
+
+Create a `.env` file based on `.env.example` and add:
+
+```env
+UPLOAD_SECRET=your_upload_password
+```
+
+This secret protects the upload routes.
+
+---
+
+## 🗄 Database / Prisma
+
+The system uses **SQLite**, which requires no external setup.
+
+`schema.prisma` uses:
+
+```prisma
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+```
+
+### Apply migrations and create the database
+
+```bash
+npx prisma migrate dev --name init
+```
+
+### Generate the Prisma Client
+
+```bash
+npx prisma generate
+```
+
+### (Optional) Open Prisma Studio
+
+```bash
+npx prisma studio
+```
+
+This provides a visual interface for viewing and editing the database.
+
+---
+
+## 📜 Available Scripts
+
+You can list all scripts with:
+
+```bash
+npm run
+```
+
+Common ones include:
+
+* `dev` – start the Next.js development server
+* `build` – create the production build
+* `start` – run the production server
+* Prisma tools (`migrate`, `generate`, etc.)
+
+---
+
+## ▶ Running the Project
+
+After setting up `.env` and database migrations:
+
+### Development mode
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Access the app at:
+👉 [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Production mode
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## 🔐 Upload Security (UPLOAD_SECRET)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Some API routes accept **data uploads**, which are protected using `UPLOAD_SECRET`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+* You must include the correct secret to upload data
+* Prevents unauthorized submissions
+* Never expose this value publicly
+* Use a strong password in production
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🚀 Deployment & Production Notes
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### SQLite usage notes
+
+SQLite works well when:
+
+* The server is single-instance
+* Load is moderate
+* Fast local storage is preferred
+
+If the project needs scaling, you can migrate to PostgreSQL or MySQL using Prisma.
+
+### Recommended hosting options
+
+* **VPS (Docker or PM2)** – best option
+* **Railway / Render / Fly.io** – easy setup
+* **Vercel** – possible, but SQLite does *not* persist across builds
+
+---
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a new branch:
+
+   ```bash
+   git checkout -b my-feature
+   ```
+3. Make your changes
+4. Test everything
+5. Submit a pull request
