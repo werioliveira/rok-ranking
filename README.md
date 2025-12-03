@@ -95,6 +95,11 @@ UPLOAD_SECRET=your_upload_password
 This secret protects the upload routes.
 
 ---
+```env
+NEXT_PUBLIC_ACKEE_URL=you_url_ackee
+NEXT_PUBLIC_ACKEE_ID=you_id_ackee
+```
+this both .env is just needed to run analitics data from ackee ( selfhosted google analitics ) isnt mandatory
 
 ## 🗄 Database / Prisma
 
@@ -180,6 +185,16 @@ Some API routes accept **data uploads**, which are protected using `UPLOAD_SECRE
 * Use a strong password in production
 
 ---
+## 📤 Data Upload Source (GitHub App Integration)
+
+### Rok Ranking uses an automated flow to collect and upload ranking data.
+
+The data is captured using the GitHub App from this project:
+
+👉 https://github.com/Cyrexxis/RokTracker/tree/main
+
+This app extracts Rise of Kingdoms ranking data and save in one folder, using UPLOAD_SECRET you can upload that data in api/upload.
+
 
 ## 🚀 Deployment & Production Notes
 
