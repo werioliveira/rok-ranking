@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ChevronDown, Home, Sword, Globe, Menu, X, BookText } from "lucide-react";
+import { ChevronDown, Home, Sword, Menu, X, BookText } from "lucide-react";
 
 export default function Header() {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isToolsOpen, setIsToolsOpen] = useState(false);
+  const [isKvkOpen, setIsKvkOpen] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
 
   return (
@@ -30,23 +31,52 @@ export default function Header() {
             <Home className="w-4 h-4 mr-1" />
             Home
           </Link>
-
 <div className="relative">
   <button
-    onClick={() => setIsOpen(!isOpen)}
+    onClick={() => setIsKvkOpen((v) => !v)}
     className="flex items-center text-card-foreground hover:text-primary transition-colors"
   >
     <Sword className="w-4 h-4 mr-1" />
+    KVK
+    <ChevronDown className="ml-1 h-4 w-4" />
+  </button>
+
+  {isKvkOpen && (
+    <div className="absolute right-0 mt-2 w-56 bg-popover rounded-md shadow-lg py-1 z-[1000] border border-muted">
+      <Link
+        href="/kvk1"
+        className="block px-4 py-2 text-sm hover:bg-muted hover:text-primary transition-colors"
+        onClick={() => setIsKvkOpen(false)}
+      >
+        KVK 1
+      </Link>
+
+      <Link
+        href="/"
+        className="block px-4 py-2 text-sm hover:bg-muted hover:text-primary transition-colors"
+        onClick={() => setIsKvkOpen(false)}
+      >
+        KVK 2
+      </Link>
+    </div>
+  )}
+</div>
+<div className="relative">
+  <button
+    onClick={() => setIsToolsOpen((v) => !v)}
+    className="flex items-center text-card-foreground hover:text-primary transition-colors"
+  >
+    <BookText className="w-4 h-4 mr-1" />
     Tools
     <ChevronDown className="ml-1 h-4 w-4" />
   </button>
 
-  {isOpen && (
+  {isToolsOpen && (
     <div className="absolute right-0 mt-2 w-56 bg-popover rounded-md shadow-lg py-1 z-[1000] border border-muted">
       <Link
         href="/message"
         className="block px-4 py-2 text-sm hover:bg-muted hover:text-primary transition-colors"
-        onClick={() => setIsOpen(false)}
+        onClick={() => setIsToolsOpen(false)}
       >
         📧 Email Builder
       </Link>
@@ -54,7 +84,7 @@ export default function Header() {
       <Link
         href="/compare"
         className="block px-4 py-2 text-sm hover:bg-muted hover:text-primary transition-colors"
-        onClick={() => setIsOpen(false)}
+        onClick={() => setIsToolsOpen(false)}
       >
         📊 Kingdom Comparison
       </Link>
@@ -95,14 +125,26 @@ export default function Header() {
                 Home
               </Link>
 
-              <Link
-                href="/matchmaking"
-                className="flex items-center gap-2 text-card-foreground hover:text-primary"
-                onClick={() => setMobileMenu(false)}
-              >
-                <Globe className="w-5 h-5" />
-                Matchmaking
-              </Link>
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Tools</p>
+                <div className="ml-4 space-y-3">
+                  <Link
+                    href="/message"
+                    className="block text-card-foreground hover:text-primary"
+                    onClick={() => setMobileMenu(false)}
+                  >
+                    📧 Email Builder
+                  </Link>
+
+                  <Link
+                    href="/compare"
+                    className="block text-card-foreground hover:text-primary"
+                    onClick={() => setMobileMenu(false)}
+                  >
+                    📊 Comparador de Reino
+                  </Link>
+                </div>
+              </div>
 
               <div>
                 <p className="text-sm text-muted-foreground mb-1">KVK</p>
