@@ -31,43 +31,36 @@ export default function Header() {
             Home
           </Link>
 
-          <Link
-            href="/message"
-            className="flex items-center text-card-foreground hover:text-primary transition-colors"
-          >
-            <BookText className="w-4 h-4 mr-1" />
-            Email Builder
-          </Link>
+<div className="relative">
+  <button
+    onClick={() => setIsOpen(!isOpen)}
+    className="flex items-center text-card-foreground hover:text-primary transition-colors"
+  >
+    <Sword className="w-4 h-4 mr-1" />
+    Tools
+    <ChevronDown className="ml-1 h-4 w-4" />
+  </button>
 
-          <div className="relative">
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="flex items-center text-card-foreground hover:text-primary transition-colors"
-            >
-              <Sword className="w-4 h-4 mr-1" />
-              KVK
-              <ChevronDown className="ml-1 h-4 w-4" />
-            </button>
+  {isOpen && (
+    <div className="absolute right-0 mt-2 w-56 bg-popover rounded-md shadow-lg py-1 z-[1000] border border-muted">
+      <Link
+        href="/message"
+        className="block px-4 py-2 text-sm hover:bg-muted hover:text-primary transition-colors"
+        onClick={() => setIsOpen(false)}
+      >
+        📧 Email Builder
+      </Link>
 
-            {isOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-popover rounded-md shadow-lg py-1 z-[1000] border border-muted">
-                <Link
-                  href="/kvk1"
-                  className="block px-4 py-2 text-sm hover:bg-muted hover:text-primary transition-colors"
-                  onClick={() => setIsOpen(false)}
-                >
-                  KVK 1
-                </Link>
-                <Link
-                  href="/"
-                  className="block px-4 py-2 text-sm hover:bg-muted hover:text-primary transition-colors"
-                  onClick={() => setIsOpen(false)}
-                >
-                  KVK 2
-                </Link>
-              </div>
-            )}
-          </div>
+      <Link
+        href="/compare"
+        className="block px-4 py-2 text-sm hover:bg-muted hover:text-primary transition-colors"
+        onClick={() => setIsOpen(false)}
+      >
+        📊 Kingdom Comparison
+      </Link>
+    </div>
+  )}
+</div>
         </nav>
 
         {/* MOBILE BUTTON */}
