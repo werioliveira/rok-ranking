@@ -74,7 +74,7 @@ export default function Header() {
   {isToolsOpen && (
     <div className="absolute right-0 mt-2 w-56 bg-popover rounded-md shadow-lg py-1 z-[1000] border border-muted">
       <Link
-        href="/message"
+        href="/tools/message"
         className="block px-4 py-2 text-sm hover:bg-muted hover:text-primary transition-colors"
         onClick={() => setIsToolsOpen(false)}
       >
@@ -82,11 +82,18 @@ export default function Header() {
       </Link>
 
       <Link
-        href="/compare"
+        href="/tools/compare"
         className="block px-4 py-2 text-sm hover:bg-muted hover:text-primary transition-colors"
         onClick={() => setIsToolsOpen(false)}
       >
         📊 Kingdom Comparison
+      </Link>
+      <Link
+        href="/tools/training"
+        className="block px-4 py-2 text-sm hover:bg-muted hover:text-primary transition-colors"
+        onClick={() => setIsToolsOpen(false)}
+      >
+        📊 Training Calculator
       </Link>
     </div>
   )}
@@ -129,7 +136,7 @@ export default function Header() {
                 <p className="text-sm text-muted-foreground mb-1">Tools</p>
                 <div className="ml-4 space-y-3">
                   <Link
-                    href="/message"
+                    href="/tools/message"
                     className="block text-card-foreground hover:text-primary"
                     onClick={() => setMobileMenu(false)}
                   >
@@ -137,11 +144,18 @@ export default function Header() {
                   </Link>
 
                   <Link
-                    href="/compare"
+                    href="/tools/compare"
                     className="block text-card-foreground hover:text-primary"
                     onClick={() => setMobileMenu(false)}
                   >
-                    📊 Comparador de Reino
+                    📊 Kingdom Comparison
+                  </Link>
+                  <Link
+                    href="/tools/training"
+                    className="block text-card-foreground hover:text-primary"
+                    onClick={() => setMobileMenu(false)}
+                  >
+                    📊 Training Calculator
                   </Link>
                 </div>
               </div>
