@@ -52,11 +52,18 @@ export default function Header() {
       </Link>
 
       <Link
-        href="/"
+        href="/kvk2"
         className="block px-4 py-2 text-sm hover:bg-muted hover:text-primary transition-colors"
         onClick={() => setIsKvkOpen(false)}
       >
         KVK 2
+      </Link>
+      <Link
+        href="/"
+        className="block px-4 py-2 text-sm hover:bg-muted hover:text-primary transition-colors"
+        onClick={() => setIsKvkOpen(false)}
+      >
+        KVK 3
       </Link>
     </div>
   )}
@@ -172,11 +179,18 @@ export default function Header() {
                   </Link>
 
                   <Link
-                    href="/"
+                    href="/kvk2"
                     className="block text-card-foreground hover:text-primary"
                     onClick={() => setMobileMenu(false)}
                   >
                     KVK 2
+                  </Link>
+                  <Link
+                    href="/"
+                    className="block text-card-foreground hover:text-primary"
+                    onClick={() => setMobileMenu(false)}
+                  >
+                    KVK 3
                   </Link>
                 </div>
               </div>
