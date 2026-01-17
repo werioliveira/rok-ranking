@@ -23,18 +23,18 @@ interface Resources {
 
 // --- CONSTANTS ---
 const BASE_STATS: Record<Tier, Stats> = {
-  T5: { time: 120, mge: 100, power: 10, kvk: 20 },
-  T4: { time: 80,  mge: 40,  power: 4,  kvk: 8 },
-  T3: { time: 60,  mge: 20,  power: 3,  kvk: 4 },
-  T2: { time: 30,  mge: 10,  power: 2,  kvk: 4 },
-  T1: { time: 15,  mge: 5,   power: 1,  kvk: 1 },
+  T5: { time: 120, mge: 80, power: 10, kvk: 20 }, // kvk 20 ok
+  T4: { time: 80,  mge: 32,  power: 4,  kvk: 8 },  // kvk 8 ok
+  T3: { time: 60,  mge: 16,  power: 3,  kvk: 4 },  // kvk 4 ok
+  T2: { time: 30,  mge: 8,  power: 2,  kvk: 2 },  
+  T1: { time: 15,  mge: 4,   power: 1,  kvk: 1 },  // kvk 1 ok
 };
 
 const UPGRADE_OFFSETS: Partial<Record<Tier, Stats>> = {
-  T4: { time: 80, mge: 40, power: 4, kvk: 8 },
-  T3: { time: 60, mge: 20, power: 3, kvk: 4 },
-  T2: { time: 30, mge: 10, power: 2, kvk: 2 },
-  T1: { time: 15, mge: 5,  power: 1, kvk: 1 },
+  T4: { time: 80, mge: 32, power: 4, kvk: 8 }, // mge alterado para 32
+  T3: { time: 60, mge: 16, power: 3, kvk: 4 }, // mge alterado para 16
+  T2: { time: 30, mge: 8,  power: 2, kvk: 2 }, // mge alterado para 8
+  T1: { time: 15, mge: 4,  power: 1, kvk: 1 }, // mge alterado para 4
 };
 
 const UNIT_COSTS: Record<Tier, Record<UnitType, Resources>> = {
@@ -83,8 +83,8 @@ export default function RokUltimateCalc() {
       ptsPerUnit = target.mge - off.mge;
       kvkPerUnit = target.kvk - off.kvk;
       pwrPerUnit = target.power - off.power;
-      if (invTarget === 'T5' && invFrom === 'T1') { ptsPerUnit = 95; kvkPerUnit = 19; }
-      if (invTarget === 'T5' && invFrom === 'T2') { ptsPerUnit = 90; kvkPerUnit = 18; }
+      //if (invTarget === 'T5' && invFrom === 'T1') { ptsPerUnit = 95; kvkPerUnit = 19; }
+      //if (invTarget === 'T5' && invFrom === 'T2') { ptsPerUnit = 90; kvkPerUnit = 18; }
     }
 
     const unitsNeeded = Math.ceil(targetMge / ptsPerUnit);
@@ -133,7 +133,7 @@ export default function RokUltimateCalc() {
         const off = UPGRADE_OFFSETS[from]; const target = BASE_STATS[to];
         if (!off) return;
         let dTime = target.time - off.time; let dMge = target.mge - off.mge; let dKvk = target.kvk - off.kvk;
-        if (to === 'T5') { if (from === 'T1') { dTime = 115; dMge = 95; dKvk = 19; } if (from === 'T2') { dTime = 80; dMge = 90; dKvk = 18; } }
+        //if (to === 'T5') { if (from === 'T1') { dTime = 115; dMge = 95; dKvk = 19; } if (from === 'T2') { dTime = 80; dMge = 90; dKvk = 18; } }
         totals.time += (dTime * qty) / speedFactor; totals.mge += dMge * qty; totals.power += (target.power - off.power) * qty; totals.kvk += dKvk * qty;
         const cTo = UNIT_COSTS[to][type]; const cFrom = UNIT_COSTS[from][type];
         totals.food += (cTo.food - cFrom.food) * qty; totals.wood += (cTo.wood - cFrom.wood) * qty; totals.stone += (cTo.stone - cFrom.stone) * qty; totals.gold += (cTo.gold - cFrom.gold) * qty;
@@ -154,8 +154,8 @@ export default function RokUltimateCalc() {
       const off = UPGRADE_OFFSETS[invFrom]; const target = BASE_STATS[invTarget];
       if (!off) return "INVALID";
       let dTime = target.time - off.time; let dMge = target.mge - off.mge;
-      if (invTarget === 'T5' && invFrom === 'T1') { dTime = 115; dMge = 95; }
-      if (invTarget === 'T5' && invFrom === 'T2') { dTime = 80; dMge = 90; }
+      //if (invTarget === 'T5' && invFrom === 'T1') { dTime = 115; dMge = 95; }
+     // if (invTarget === 'T5' && invFrom === 'T2') { dTime = 80; dMge = 90; }
       uTime = dTime / speedFactor; uMge = dMge; uKvk = target.kvk - off.kvk; uPower = target.power - off.power;
       const cTo = UNIT_COSTS[invTarget][invType]; const cFrom = UNIT_COSTS[invFrom][invType];
       uRes = { food: cTo.food - cFrom.food, wood: cTo.wood - cFrom.wood, stone: cTo.stone - cFrom.stone, gold: cTo.gold - cFrom.gold };
