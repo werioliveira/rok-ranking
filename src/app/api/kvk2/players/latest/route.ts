@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import prismaKvk2 from "@/lib/prisma-kvk2";
+import { getPrismaClient } from "@/lib/prisma";
 
-const prisma = prismaKvk2;
+const prisma = getPrismaClient("2");
 
 function serializeValue(v: any): any {
   if (v === null || v === undefined) return null;

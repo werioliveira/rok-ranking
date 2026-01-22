@@ -5,29 +5,92 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = "file:./dev.db"
+  url      = env("DATABASE_URL")
+}
+
+enum MGEStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  password      String
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  role          Role      @default(USER)
+
+  accounts Account[]
+  sessions Session[]
+
+  createdAt  DateTime     @default(now())
+  MGERequest MGERequest[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
 }
 
 model PlayerSnapshot {
-  id            Int      @id @default(autoincrement())
-  createdAt     DateTime @default(now())
-  playerId      Int
-  name          String
-  power         BigInt
-  killpoints    BigInt
-  deads         BigInt
-  t1Kills       BigInt
-  t2Kills       BigInt
-  t3Kills       BigInt
-  t4Kills       BigInt
-  t5Kills       BigInt
-  totalKills    BigInt
-  t45Kills      BigInt
-  ranged        BigInt
-  rssGathered   BigInt
-  rssAssist     BigInt
-  helps         BigInt
-  alliance      String
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  playerId    Int
+  name        String
+  power       BigInt
+  killpoints  BigInt
+  deads       BigInt
+  t1Kills     BigInt
+  t2Kills     BigInt
+  t3Kills     BigInt
+  t4Kills     BigInt
+  t5Kills     BigInt
+  totalKills  BigInt
+  t45Kills    BigInt
+  ranged      BigInt
+  rssGathered BigInt
+  rssAssist   BigInt
+  helps       BigInt
+  alliance    String
 }
 
 model KingdomSnapshot {
@@ -37,5 +100,47 @@ model KingdomSnapshot {
   name        String
   totalPower  BigInt
   playerCount Int
-  ranking     Int?     // calculado quando você buscar na API
+  ranking     Int? // calculado quando você buscar na API
+}
+
+
+model MGEEvent {
+  id          String   @id @default(cuid())
+  name        String   // Ex: "MGE #1 - Saladino" ou "MGE de Cavalaria"
+  description String?  // Regras específicas ou data do evento
+  active      Boolean  @default(true) // Apenas um evento ativo por vez para inscrições
+  createdAt   DateTime @default(now())
+  
+  requests    MGERequest[]
+
+  @@index([active])
+}
+
+model MGERequest {
+  id String @id @default(cuid())
+
+  // Relação com Usuário
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  // Relação com o Evento Específico
+  eventId String
+  event   MGEEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  playerName     String
+  playerId       String
+  commanderName  String
+  commanderState String
+  reason         String
+
+  status     MGEStatus @default(PENDING)
+  score      Int?      // Ranking 1-10
+  createdAt  DateTime  @default(now())
+  reviewedAt DateTime?
+  reviewedBy String?   // Nome do Admin que revisou
+
+  @@index([status])
+  @@index([userId])
+  @@index([eventId])
+  @@unique([userId, eventId])
 }

@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Analytics from "@/components/Analytics";
 import DonationButton from "@/components/DonationButton";
 import Header from "@/components/Header";
+import { Providers } from "./providers";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,12 +22,15 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className={inter.className}>
+        <Providers>
+
         <TooltipProvider>
           <Analytics />
           <DonationButton />
           <Header />
           {children}
         </TooltipProvider>
+        </Providers>
       </body>
     </html>
   );

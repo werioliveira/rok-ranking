@@ -83,8 +83,6 @@ export default function RokUltimateCalc() {
       ptsPerUnit = target.mge - off.mge;
       kvkPerUnit = target.kvk - off.kvk;
       pwrPerUnit = target.power - off.power;
-      //if (invTarget === 'T5' && invFrom === 'T1') { ptsPerUnit = 95; kvkPerUnit = 19; }
-      //if (invTarget === 'T5' && invFrom === 'T2') { ptsPerUnit = 90; kvkPerUnit = 18; }
     }
 
     const unitsNeeded = Math.ceil(targetMge / ptsPerUnit);

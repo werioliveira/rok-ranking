@@ -1,7 +1,10 @@
+import { getPrismaClient } from "@/lib/prisma";
 import { NextResponse } from "next/server";
-import prismaKvk3 from "@/lib/prisma-kvk3";
+// Define qual KVK usar (ex: vindo de um campo oculto no form ou env)
+const kvkId = process.env.KVK_DB_VERSION || "1";
 
-const prisma = prismaKvk3;
+  // Obtém o cliente específico para aquele banco
+const prisma = getPrismaClient(kvkId);
 
 function serializeValue(v: any): any {
   if (v === null || v === undefined) return null;
