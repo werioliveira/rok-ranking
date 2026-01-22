@@ -49,13 +49,15 @@ import { usePlayerHistoryAnalytics } from '@/hooks/usePlayerHistoryAnalytics';
 import GrowthIndicators from '@/components/PlayerDetails/GrowthIndicators';
 import { PlayerStatsChart } from '@/components/PlayerDetails/PlayerStatsChart';
 import { formatNumber } from '@/lib/utils';
+import { useSearchParams } from "next/navigation";
 
 const PlayerDetailPage = () => {
   const params = useParams();
   const router = useRouter();
   const playerId = params.playerId as string;
-
-  const { data: playerData, loading, error } = usePlayerDetail(playerId);
+  const searchParams = useSearchParams();
+  const kvk = searchParams.get("kvk"); // "kvk1" | null
+  const { data: playerData, loading, error } = usePlayerDetail(playerId, kvk);
 
   // Estados UI mantidos aqui
   const [selectedChart, setSelectedChart] = useState<'power' | 'totalKills' | 'killpoints'>('power');

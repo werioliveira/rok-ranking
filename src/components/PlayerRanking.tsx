@@ -246,7 +246,7 @@ export const PlayerRanking = ({ kvk }: { kvk?: string }) => {
                 key={`${player.playerId}-${currentPage}-${sortField}-${searchTerm}-${dateRange?.startDate || 'no-date'}-${index}`}
                 player={player}
                 rank={player.rank}
-                kvk={kvk ? "kvk1" : ""}
+                kvk={kvk ? kvk : ""}
               />
             ))}
           </div>
