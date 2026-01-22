@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { getPrismaClient } from "@/lib/prisma";
 import { Trophy, Info } from "lucide-react";
 
