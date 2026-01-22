@@ -62,7 +62,7 @@ export function LoginButton() {
           <div className="p-2 space-y-1">
             {/* Common Links */}
             <Link
-              href="/tools/mge/my-requests"
+              href="/mge"
               onClick={() => setOpen(false)}
               className="flex items-center gap-3 px-3 py-2 text-sm text-slate-300 hover:bg-slate-800 rounded-md transition-colors"
             >
