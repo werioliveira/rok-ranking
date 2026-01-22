@@ -71,6 +71,13 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+model PlayerData {
+  playerId    String   @id
+  name        String
+  power       BigInt?
+  updatedAt   DateTime @default(now())
+}
+
 model PlayerSnapshot {
   id          Int      @id @default(autoincrement())
   createdAt   DateTime @default(now())
