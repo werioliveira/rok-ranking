@@ -84,57 +84,65 @@ export async function createMGEEvent(name: string, description?: string) {
  */
 export async function createMGERequest(formData: FormData) {
   const session = await getSession();
-  if (!session) return { error: "You must be logged in to submit a request." };
+  
+  // Se não estiver logado, continua barrando (segurança básica)
+  if (!session) return { error: "You must be logged in." };
 
   const kvkId = process.env.KVK_DB_VERSION || "1";
   const prisma = getPrismaClient(kvkId);
 
-  // 1. Check for active event
   const activeEvent = await prisma.mGEEvent.findFirst({ where: { active: true } });
   if (!activeEvent) return { error: "MGE registrations are currently closed." };
 
-  // 2. Check if user already has a request for THIS active event
-  const existingRequest = await prisma.mGERequest.findFirst({
-    where: {
-      userId: session.user.id,
-      eventId: activeEvent.id
-    }
-  });
-
-  if (existingRequest) {
-    return { error: `You have already submitted a request for ${activeEvent.name}.` };
-  }
-
-  // 3. Data validation
   const playerName = formData.get("name")?.toString();
   const playerId = formData.get("playerId")?.toString();
   const commanderName = formData.get("commander")?.toString();
   const commanderState = formData.get("commanderStatus")?.toString();
   const reason = formData.get("reason")?.toString();
+  
+  // Campo opcional vindo apenas do painel admin
+  const isAdminEntry = formData.get("isAdminEntry") === "true";
 
   if (!playerName || !playerId || !commanderName || !reason) {
     return { error: "Please fill in all required fields." };
   }
 
+  // Lógica de Trava: 
+  // Se for Player (não AdminEntry), checar se ele já enviou um pedido.
+  if (!isAdminEntry) {
+    const existingRequest = await prisma.mGERequest.findFirst({
+      where: {
+        userId: session.user.id,
+        eventId: activeEvent.id
+      }
+    });
+    if (existingRequest) return { error: "You already have a request for this event." };
+  }
+
   try {
     await prisma.mGERequest.create({
       data: {
-        userId: session.user.id,
+        // Se for admin entry, não vinculamos ao userId da sessão, 
+        // mas marcamos quem registrou.
+        userId: isAdminEntry ? null : session.user.id,
+        recordedBy: isAdminEntry ? session.user.name : null,
+        
         eventId: activeEvent.id,
         playerName,
         playerId,
         commanderName,
         commanderState: commanderState || "N/A",
         reason,
-        status: "PENDING",
+        status: isAdminEntry ? MGEStatus.ACCEPTED : MGEStatus.PENDING,
       },
     });
 
-    revalidatePath("/tools/mge/my-requests");
+    revalidatePath("/mge");
+    revalidatePath("/mge/list");
+    revalidatePath("/admin/mge");
     return { success: true };
   } catch (e) {
-    console.error("MGE_CREATE_ERROR:", e);
-    return { error: "An error occurred while saving your request. Please try again." };
+    return { error: "Error saving request." };
   }
 }
 

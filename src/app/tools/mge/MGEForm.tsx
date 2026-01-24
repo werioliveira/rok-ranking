@@ -6,10 +6,11 @@ import { CheckCircle2, AlertCircle, Loader2, Search, Fingerprint, Shield } from 
 import clsx from "clsx";
 
 type Props = {
-  userName: string;
+  userName?: string;
+  isAdminMode?: boolean; // Habilita o registro manual para players sem conta
 };
 
-export default function MGEForm({ userName }: Props) {
+export default function MGEForm({ userName, isAdminMode = false }: Props) {
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -26,6 +27,7 @@ export default function MGEForm({ userName }: Props) {
   const isSkillsValid = commanderStatus.length === 4;
   const canSubmit = idFound && isSkillsValid && reason.length > 0 && !isPending;
 
+  // Busca automática do Player pelo ID
   useEffect(() => {
     if (playerId.length < 7) {
       setSearchDone(false);
@@ -48,6 +50,7 @@ export default function MGEForm({ userName }: Props) {
         }
       } catch (error) {
         setIdFound(false);
+        setPlayerName("Search error");
       } finally {
         setIsSearching(false);
         setSearchDone(true);
@@ -65,7 +68,7 @@ export default function MGEForm({ userName }: Props) {
       if (result?.error) {
         setMessage({ type: "error", text: result.error });
       } else {
-        setMessage({ type: "success", text: "Your request has been successfully submitted!" });
+        setMessage({ type: "success", text: isAdminMode ? "Manual entry saved!" : "Your request has been successfully submitted!" });
         formRef.current?.reset();
         setPlayerId("");
         setPlayerName("");
@@ -80,6 +83,9 @@ export default function MGEForm({ userName }: Props) {
   return (
     <form ref={formRef} action={handleSubmit} className="space-y-6 bg-[#0f0f0f] border border-slate-800 rounded-xl p-6 shadow-2xl">
       
+      {/* Flag oculta para bypass de userId no servidor */}
+      <input type="hidden" name="isAdminEntry" value={isAdminMode ? "true" : "false"} />
+
       {message && (
         <div className={clsx(
           "p-4 rounded-lg flex items-center gap-3 border animate-in fade-in slide-in-from-top-2",
@@ -92,7 +98,7 @@ export default function MGEForm({ userName }: Props) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         
-        {/* CHARACTER ID - Agora como TEXT para evitar arrows */}
+        {/* CHARACTER ID - Input Text (Sem Arrows) */}
         <div className="relative">
           <label className="flex items-center text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">
             <Fingerprint className="w-3 h-3 mr-1 text-amber-500" /> Character ID
@@ -100,11 +106,11 @@ export default function MGEForm({ userName }: Props) {
           <div className="relative group">
             <input
               name="playerId"
-              type="text" // Alterado para text
-              inputMode="numeric" // Melhora o teclado no mobile
+              type="text"
+              inputMode="numeric"
               required
               value={playerId}
-              onChange={(e) => setPlayerId(e.target.value.replace(/[^0-9]/g, ''))} // Garante apenas números
+              onChange={(e) => setPlayerId(e.target.value.replace(/[^0-9]/g, ''))}
               placeholder="Ex: 196468115"
               className="w-full rounded-lg border border-slate-800 px-4 py-3 bg-slate-900/40 text-white focus:border-amber-500 outline-none transition-all pr-12"
             />
@@ -122,7 +128,7 @@ export default function MGEForm({ userName }: Props) {
           </div>
         </div>
 
-        {/* USERNAME */}
+        {/* USERNAME (READONLY) */}
         <div>
           <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">
             Username
@@ -131,16 +137,18 @@ export default function MGEForm({ userName }: Props) {
             name="name"
             value={playerName}
             readOnly
-            placeholder="Waiting for ID..."
+            required
+            placeholder={isSearching ? "Searching database..." : "Waiting for valid ID..."}
             className={clsx(
               "w-full rounded-lg border px-4 py-3 outline-none transition-all font-bold",
               idFound 
                 ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" 
-                : "bg-slate-900/20 border-slate-800 text-slate-600"
+                : "bg-slate-900/20 border-slate-800 text-slate-600 cursor-not-allowed"
             )}
           />
         </div>
 
+        {/* TARGET COMMANDER */}
         <div>
           <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">
             Target Commander
@@ -153,7 +161,7 @@ export default function MGEForm({ userName }: Props) {
           />
         </div>
 
-        {/* SKILLS */}
+        {/* SKILLS - 4 DIGITS ONLY */}
         <div>
           <label className="flex items-center text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">
             <Shield className="w-3 h-3 mr-1 text-amber-500" /> Skills (Ex: 5511)
@@ -174,11 +182,11 @@ export default function MGEForm({ userName }: Props) {
         </div>
       </div>
 
-      {/* MOTIVATION / CONTADOR */}
+{/* MOTIVATION / JUSTIFICATION DINÂMICO */}
       <div className="relative">
         <div className="flex justify-between items-center mb-2">
           <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500">
-            Motivation / Justification
+            {isAdminMode ? "Admin Justification" : "Motivation / Justification"}
           </label>
           <div className={clsx(
             "text-[10px] font-black px-2.5 py-1 rounded border transition-all shadow-md",
@@ -196,8 +204,12 @@ export default function MGEForm({ userName }: Props) {
           value={reason}
           onChange={(e) => setReason(e.target.value)}
           rows={4}
-          placeholder="Briefly explain your activity level and gear focus..."
-          className="w-full rounded-lg border border-slate-800 px-4 py-3 bg-slate-900/40 text-white focus:border-amber-500 outline-none transition-all resize-none text-sm leading-relaxed"
+          placeholder={
+            isAdminMode 
+              ? "Example: Top contributor, fixed rank agreed by council, or special request from leadership..." 
+              : "Explain why you deserve this slot (activity level, gear, contribution)..."
+          }
+          className="w-full rounded-lg border border-slate-800 px-4 py-3 bg-slate-900/40 text-white focus:border-amber-500 outline-none transition-all resize-none text-sm leading-relaxed placeholder:text-slate-600"
         />
       </div>
 
@@ -211,14 +223,15 @@ export default function MGEForm({ userName }: Props) {
             : "bg-amber-600 hover:bg-amber-500 text-white shadow-[0_10px_30px_rgba(217,119,6,0.3)] active:scale-[0.98]"
         )}
       >
-        {isPending ? <Loader2 size={18} className="animate-spin" /> : "Request MGE Slot"}
+        {isPending ? <Loader2 size={18} className="animate-spin" /> : isAdminMode ? "Register Player (Admin Mode)" : "Request MGE Slot"}
       </button>
 
+      {/* AVISO DE ID NÃO ENCONTRADO */}
       {!idFound && searchDone && playerId.length >= 7 && (
         <div className="flex items-center justify-center gap-2 text-red-500 bg-red-500/5 py-3 rounded-lg border border-red-500/10 animate-in zoom-in-95 duration-300">
           <AlertCircle size={14} />
-          <span className="text-[10px] font-black uppercase tracking-widest">
-            ID NOT REGISTERED IN OFFICIAL DATA
+          <span className="text-[10px] font-black uppercase tracking-widest text-center">
+            ID NOT FOUND IN THE LATEST SNAPSHOT. PLEASE CHECK DATA.
           </span>
         </div>
       )}

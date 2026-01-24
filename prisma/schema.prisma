@@ -127,8 +127,8 @@ model MGERequest {
   id String @id @default(cuid())
 
   // Relação com Usuário
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
 
   // Relação com o Evento Específico
   eventId String
@@ -145,6 +145,8 @@ model MGERequest {
   createdAt  DateTime  @default(now())
   reviewedAt DateTime?
   reviewedBy String?   // Nome do Admin que revisou
+  recordedBy String?   // Nome do Admin que recordou
+
 
   @@index([status])
   @@index([userId])
