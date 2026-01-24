@@ -28,11 +28,16 @@ export default async function MGEAdminPage() {
     <div className="min-h-screen bg-[#0a0a0a] text-slate-200 p-4 md:p-8">
       <div className="max-w-5xl mx-auto">
         <header className="mb-8 border-b border-slate-800 pb-6">
-          {activeEvent ? (
+{activeEvent ? (
             <div className="flex justify-between items-center font-bold">
               <div>
                 <h1 className="text-3xl uppercase text-amber-500">{activeEvent.name}</h1>
-                <p className="text-slate-500 italic">Registrations Open</p>
+                <div className="flex items-center gap-2 mt-1">
+                   <p className="text-slate-500 italic text-sm">Registrations Open</p>
+                   <span className="bg-slate-800 text-slate-400 text-[10px] px-2 py-0.5 rounded border border-slate-700 uppercase">
+                     {activeEvent.slots || 15} Slots Total
+                   </span>
+                </div>
               </div>
               
               <form action={async () => {
@@ -52,21 +57,40 @@ export default async function MGEAdminPage() {
               <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                 <PlusCircle className="text-amber-500" /> Open New MGE Cycle
               </h2>
+              
               <form action={async (formData) => {
                 "use server";
                 const name = formData.get("eventName") as string;
-                if (name) await createMGEEvent(name);
-              }} className="flex gap-3">
-                <input 
-                  name="eventName"
-                  required
-                  placeholder="Ex: MGE #2 - Saladin"
-                  className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none focus:ring-2 focus:ring-amber-500"
-                />
-                <button type="submit" className="bg-amber-600 hover:bg-amber-500 text-black px-6 py-2 rounded-lg font-black uppercase text-sm transition-all">
-                  Start Registration
-                </button>
+                const slots = parseInt(formData.get("slots") as string) || 15;
+                
+                if (name) {
+                  // Passamos agora o nome e o número de slots para a Action
+                  await createMGEEvent(name, slots);
+                }
+              }} className="space-y-4">
+                <div className="flex flex-col md:flex-row gap-3">
+                  <input 
+                    name="eventName"
+                    required
+                    placeholder="Ex: MGE #2 - Saladin"
+                    className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                  
+                  {/* Seletor de Slots */}
+                  <select 
+                    name="slots"
+                    className="bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none focus:ring-2 focus:ring-amber-500 font-bold"
+                  >
+                    <option value="15">15 Slots</option>
+                    <option value="10">10 Slots</option>
+                  </select>
+
+                  <button type="submit" className="bg-amber-600 hover:bg-amber-500 text-black px-6 py-2 rounded-lg font-black uppercase text-sm transition-all whitespace-nowrap">
+                    Start Registration
+                  </button>
+                </div>
               </form>
+
               <p className="text-slate-500 text-xs mt-3 italic">
                 * Creating a new MGE will automatically archive the previous one.
               </p>

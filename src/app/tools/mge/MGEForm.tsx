@@ -22,7 +22,6 @@ export default function MGEForm({ userName, isAdminMode = false }: Props) {
   const [idFound, setIdFound] = useState(false);
   const [searchDone, setSearchDone] = useState(false);
   const [reason, setReason] = useState("");
-  
   const charLimit = 300;
   const isSkillsValid = commanderStatus.length === 4;
   const canSubmit = idFound && isSkillsValid && reason.length > 0 && !isPending;

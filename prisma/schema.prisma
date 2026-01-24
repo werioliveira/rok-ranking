@@ -116,6 +116,7 @@ model MGEEvent {
   name        String   // Ex: "MGE #1 - Saladino" ou "MGE de Cavalaria"
   description String?  // Regras específicas ou data do evento
   active      Boolean  @default(true) // Apenas um evento ativo por vez para inscrições
+  slots       Int          @default(10) // Novo campo: 10 ou 15
   createdAt   DateTime @default(now())
   
   requests    MGERequest[]

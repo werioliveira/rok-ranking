@@ -6,21 +6,23 @@ export default async function MGEPublicListPage() {
   const kvkId = process.env.KVK_DB_VERSION || "1";
   const prisma = getPrismaClient(kvkId);
 
-  // 1. Fetch currently active event
-  const activeEvent = await prisma.mGEEvent.findFirst({
-    where: { active: true },
+  // 1. Busca o evento mais recente (pode ser o ativo ou o último fechado)
+  const lastEvent = await prisma.mGEEvent.findFirst({
+    orderBy: { createdAt: "desc" },
   });
 
-  // 2. Fetch accepted requests ONLY for the active event
-  const finalTen = activeEvent
+  const maxSlots = lastEvent?.slots || 15;
+
+  // 2. Busca os requests aceitos com ranking definido para este evento
+  const finalList = lastEvent
     ? await prisma.mGERequest.findMany({
         where: {
-          eventId: activeEvent.id,
+          eventId: lastEvent.id,
           status: "ACCEPTED",
           score: { not: null },
         },
         orderBy: { score: "asc" },
-        take: 10,
+        take: maxSlots,
       })
     : [];
 
@@ -31,25 +33,38 @@ export default async function MGEPublicListPage() {
         <h1 className="text-4xl font-black uppercase tracking-tighter">
           Official MGE List
         </h1>
-        {activeEvent ? (
-          <p className="text-amber-500 font-bold animate-pulse uppercase tracking-widest">
-            {activeEvent.name}
-          </p>
+        
+        {lastEvent ? (
+          <div className="space-y-1">
+            <p className="text-amber-500 font-bold uppercase tracking-widest">
+              {lastEvent.name}
+            </p>
+            {/* Badge de status para informar se ainda está aberto ou se é o resultado final */}
+            <span className={lastEvent.active 
+              ? "text-[10px] bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-2 py-0.5 rounded uppercase font-black"
+              : "text-[10px] bg-slate-500/10 text-slate-500 border border-slate-500/20 px-2 py-0.5 rounded uppercase font-black"
+            }>
+              {lastEvent.active ? "● Live Ranking" : "Final Results"}
+            </span>
+          </div>
         ) : (
-          <p className="text-slate-500">No active event at the moment</p>
+          <p className="text-slate-500">No events found</p>
         )}
-        <p className="text-slate-500 text-sm">KvK {kvkId} - Selected Governors</p>
+        <p className="text-slate-500 text-sm mt-2">KvK {kvkId} - Selected Governors</p>
       </div>
 
-      {!activeEvent || finalTen.length === 0 ? (
+      {/* Só mostramos a tabela se houver um evento e se o admin já tiver atribuído algum score */}
+      {!lastEvent || finalList.length === 0 ? (
         <div className="bg-[#111] border border-slate-800 rounded-2xl p-10 text-center">
           <Info className="mx-auto h-8 w-8 text-slate-600 mb-3" />
           <p className="text-slate-400">
-            The ranking list has not been published for the current event yet.
+            {lastEvent?.active 
+              ? "The ranking is being organized. Check back soon!" 
+              : "No rankings published for the last event."}
           </p>
         </div>
       ) : (
-        <div className="bg-[#111] border border-slate-800 rounded-2xl overflow-hidden shadow-2xl">
+        <div className="bg-[#111] border border-slate-800 rounded-2xl overflow-hidden shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-700">
           <table className="w-full text-left">
             <thead className="bg-slate-900/50 border-b border-slate-800">
               <tr>
@@ -60,12 +75,12 @@ export default async function MGEPublicListPage() {
               </tr>
             </thead>
             <tbody>
-              {finalTen.map((player) => (
+              {finalList.map((player) => (
                 <tr
                   key={player.id}
-                  className="border-b border-slate-800/50 hover:bg-white/5 transition-colors"
+                  className="border-b border-slate-800/50 hover:bg-white/5 transition-colors group"
                 >
-                  <td className="p-4 font-mono font-bold text-xl text-slate-500 italic">
+                  <td className="p-4 font-mono font-bold text-xl text-slate-500 italic group-hover:text-amber-500 transition-colors">
                     #{player.score}
                   </td>
                   <td className="p-4 font-bold text-white">

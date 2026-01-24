@@ -14,6 +14,7 @@ export default async function MGEPage() {
   // Checks for an active event
   const activeEvent = await prisma.mGEEvent.findFirst({ where: { active: true } });
 
+
   return (
     <div className="max-w-screen-md mx-auto px-4 py-10">
       <h1 className="text-2xl font-bold mb-2">

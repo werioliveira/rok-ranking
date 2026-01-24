@@ -14,7 +14,7 @@ export default async function MGERankingPage() {
   const activeEvent = await prisma.mGEEvent.findFirst({
     where: { active: true }
   });
-
+  const maxSlots = activeEvent?.slots || 15;
   const acceptedRequests = activeEvent 
     ? await prisma.mGERequest.findMany({
         where: { 
@@ -101,7 +101,7 @@ export default async function MGERankingPage() {
                         className="bg-slate-900 border border-slate-700 text-sm rounded-lg px-3 py-2 text-white outline-none focus:border-amber-500"
                       >
                         <option value="none">No Rank</option>
-                        {[...Array(10)].map((_, i) => (
+                        {[...Array(maxSlots)].map((_, i) => (
                           <option key={i + 1} value={i + 1}>Rank {i + 1}</option>
                         ))}
                       </select>
