@@ -2,7 +2,7 @@ import { getSession } from "@/lib/getSession";
 import { getPrismaClient } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { createMGEEvent, updateMGERequestStatus } from "@/lib/actions/mge";
-import { Check, X, Shield, User, ScrollText, PlusCircle } from "lucide-react";
+import { Check, X, Shield, User, ScrollText, PlusCircle, Lock } from "lucide-react";
 import { revalidatePath } from "next/cache";
 
 export default async function MGEAdminPage() {
@@ -40,17 +40,24 @@ export default async function MGEAdminPage() {
                 </div>
               </div>
               
-              <form action={async () => {
-                "use server";
-                const kvk = process.env.KVK_DB_VERSION || "1";
-                const p = getPrismaClient(kvk);
-                await p.mGEEvent.updateMany({ where: { active: true }, data: { active: false } });
-                revalidatePath("/admin/mge");
-              }}>
-                <button className="text-xs border border-red-500/30 text-red-500 px-3 py-1 rounded hover:bg-red-500/10 transition">
-                  Close this MGE
-                </button>
-              </form>
+<form 
+    action={async () => {
+      "use server";
+      const kvk = process.env.KVK_DB_VERSION || "1";
+      const p = getPrismaClient(kvk);
+      await p.mGEEvent.updateMany({ where: { active: true }, data: { active: false } });
+      revalidatePath("/admin/mge");
+      revalidatePath("/mge/list"); // Garante que a lista pública atualize o status para "Final"
+    }}
+  >
+    <button className="group relative flex items-center gap-3 bg-red-600 hover:bg-red-500 text-white px-8 py-4 rounded-xl font-black uppercase text-xs tracking-[0.2em] transition-all shadow-[0_0_20px_rgba(220,38,38,0.2)] hover:shadow-[0_0_30px_rgba(220,38,38,0.4)] active:scale-95">
+      <Lock className="w-4 h-4 transition-transform group-hover:rotate-12" />
+      Close & Lock Event
+      
+      {/* Detalhe estético de brilho no hover */}
+      <div className="absolute inset-0 rounded-xl bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+    </button>
+  </form>
             </div>
           ) : (
             <div className="bg-amber-500/5 border border-amber-500/20 p-6 rounded-2xl">
