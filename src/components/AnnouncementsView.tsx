@@ -29,7 +29,7 @@ export default function AnnouncementsPage({ announcements = [] }: Props) {
         <h2 className="text-4xl font-black uppercase tracking-tighter text-white/20">
           No Intel <span className="text-[#d4af37]/10">Found</span>
         </h2>
-        <p className="text-gray-600 mt-4 text-xs font-bold uppercase tracking-[0.4em]">Aguardando transmissões do comando central...</p>
+        <p className="text-gray-600 mt-4 text-xs font-bold uppercase tracking-[0.4em]">Waiting for new Announcements...</p>
         <div className="mt-10 p-4 border border-white/5 rounded-2xl bg-[#121417]/30 text-[10px] text-gray-700 uppercase font-bold">
           Status: Encrypted & Waiting
         </div>

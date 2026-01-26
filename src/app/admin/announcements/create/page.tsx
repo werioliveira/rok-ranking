@@ -73,7 +73,7 @@ export default async function CreateAnnouncementPage() {
 
           <div className="flex flex-col gap-2">
             <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest">Reporting Officer (Author)</label>
-            <input name="author" required placeholder="Your Name/Nick" className="bg-[#121417] border border-white/10 rounded-xl p-4 text-white focus:border-[#d4af37] outline-none" />
+            <input disabled name="author" value={session.user.name} required placeholder="Your Name/Nick" className="bg-[#121417] border border-white/10 rounded-xl p-4 text-white focus:border-[#d4af37] outline-none" />
           </div>
 
           {/* MAIN CONTENT */}
