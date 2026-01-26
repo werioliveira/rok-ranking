@@ -1,4 +1,6 @@
 // src/app/page.tsx
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 import Footer from "@/components/Footer";
 import { PlayerRanking } from "@/components/PlayerRanking";
 import { getLatestAnnouncements } from "@/app/announcements/create/actions";
