@@ -30,7 +30,7 @@ export const RECURRING_PATTERNS = [
   {
     "title": "More Than Gems",
     "color": "#FF5733",
-    "patterns": [{ "startDate": "2025-08-15", "frequency": 4, "duration": 2 }]
+    "patterns": [{ "startDate": "2025-08-16", "frequency": 4, "duration": 2 }]
   },
   {
     "title": "Egg / Hammer Event",
@@ -52,20 +52,20 @@ export const RECURRING_PATTERNS = [
     "title": "MGE",
     "color": "#3a94ee",
     "patterns": [
-      { "startDate": "2023-12-31", "frequency": 8, "duration": 6 },
-      { "startDate": "2024-01-14", "frequency": 8, "duration": 6 },
-      { "startDate": "2024-01-28", "frequency": 8, "duration": 6 },
-      { "startDate": "2024-02-11", "frequency": 8, "duration": 6 }
+      { "startDate": "2024-01-01", "frequency": 8, "duration": 6 },
+      { "startDate": "2024-01-15", "frequency": 8, "duration": 6 },
+      { "startDate": "2024-01-29", "frequency": 8, "duration": 6 },
+      { "startDate": "2024-02-12", "frequency": 8, "duration": 6 }
     ]
   },
   {
     "title": "Wheel of Fortune",
     "color": "#f99806",
     "patterns": [
-      { "startDate": "2024-01-01", "frequency": 8, "duration": 3 },
-      { "startDate": "2024-01-15", "frequency": 8, "duration": 3 },
-      { "startDate": "2024-01-29", "frequency": 8, "duration": 3 },
-      { "startDate": "2024-02-12", "frequency": 8, "duration": 3 }
+      { "startDate": "2024-01-02", "frequency": 8, "duration": 3 },
+      { "startDate": "2024-01-16", "frequency": 8, "duration": 3 },
+      { "startDate": "2024-01-30", "frequency": 8, "duration": 3 },
+      { "startDate": "2024-02-13", "frequency": 8, "duration": 3 }
     ]
   },
   {
@@ -76,7 +76,7 @@ export const RECURRING_PATTERNS = [
 { 
     "title": "The Golden Kingdom", 
     "color": "#FFFF00", 
-    "patterns": [{ "startDate": "2025-07-30", "frequency": 2, "duration": 3 }] 
+    "patterns": [{ "startDate": "2025-07-31", "frequency": 2, "duration": 3 }] 
   },
 
   // Alliance Mobilization: A cada 4 semanas, duração de 14 dias
@@ -90,7 +90,7 @@ export const RECURRING_PATTERNS = [
     "title": "Ceroli Crisis", 
     "color": "#6b9a89", 
     "patterns": [{ 
-      "startDate": "2026-01-25", 
+      "startDate": "2026-01-26", 
       "frequency": 4, 
       "duration": 3 
     }] 
@@ -112,7 +112,7 @@ export const RECURRING_PATTERNS = [
   {
     "title": "Ark of Osiris",
     "color": "#b7a8ff",
-    "patterns": [{ "startDate": "2025-02-04", "frequency": 2, "duration": 5 }]
+    "patterns": [{ "startDate": "2025-02-05", "frequency": 2, "duration": 5 }]
   },
   {
     "title": "Champions of Olympia",
