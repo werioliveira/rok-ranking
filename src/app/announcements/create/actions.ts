@@ -22,7 +22,7 @@ export async function createAnnouncement(formData: FormData) {
   const tag = formData.get("tag") as string;
   const category = formData.get("category") as string;
   const priority = formData.get("priority") as string;
-  const author = formData.get("author") as string;
+  const author = session.user.name || "Unknown";
 
   await prisma.announcement.create({
     data: {
@@ -41,6 +41,10 @@ export async function createAnnouncement(formData: FormData) {
   redirect("/announcements");
 }
 export async function deleteAnnouncement(formData: FormData) {
+   const session = await getServerSession(authOptions);
+  if (!session || session.user.role !== "ADMIN") {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const id = formData.get("id") as string;
 
   if (!id) return;

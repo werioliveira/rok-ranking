@@ -1,6 +1,8 @@
 "use client";
 import React from 'react';
 import Link from 'next/link';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { Announcement } from '@/components/AnnouncementsView';
 import { deleteAnnouncement } from '@/app/announcements/create/actions';
 
@@ -26,7 +28,7 @@ export default function AnnouncementDetail({ announcement }: { announcement: Ann
           Return to Feed
         </Link>
 
-        {/* BOTÃO DE DELETE (Admin Only) */}
+        {/* BOTÃO DE DELETE */}
         <form action={deleteAnnouncement} onSubmit={(e) => {
           if(!confirm("PERMANENTLY DELETE THIS INTEL REPORT?")) e.preventDefault();
         }}>
@@ -71,8 +73,27 @@ export default function AnnouncementDetail({ announcement }: { announcement: Ann
             {announcement.summary}
           </p>
           
-          <div className="text-lg text-gray-300 leading-loose space-y-6 font-sans whitespace-pre-wrap">
-             {announcement.content}
+          {/* CONTEÚDO COM MARKDOWN RENDERIZADO */}
+          <div className="text-lg text-gray-300 leading-relaxed space-y-2 font-sans overflow-hidden">
+            <ReactMarkdown 
+              remarkPlugins={[remarkGfm]}
+              components={{
+                // Estilização das tags Markdown para bater com seu tema
+                h1: ({...props}) => <h2 className="text-3xl font-black text-white uppercase mt-10 mb-4" {...props} />,
+                h2: ({...props}) => <h3 className="text-2xl font-bold text-[#d4af37] uppercase mt-8 mb-4" {...props} />,
+                h3: ({...props}) => <h4 className="text-xl font-bold text-white uppercase mt-6 mb-2" {...props} />,
+                p: ({...props}) => <p className="mb-4 text-gray-300" {...props} />,
+                ul: ({...props}) => <ul className="list-disc list-outside ml-6 space-y-2 mb-6 text-[#d4af37]" {...props} />,
+                ol: ({...props}) => <ol className="list-decimal list-outside ml-6 space-y-2 mb-6 text-[#d4af37]" {...props} />,
+                li: ({...props}) => <li className="text-gray-300 pl-2" {...props} />,
+                strong: ({...props}) => <strong className="text-white font-black border-b border-[#d4af37]/20" {...props} />,
+                a: ({...props}) => <a className="text-[#d4af37] underline hover:text-white transition-colors" {...props} />,
+                hr: () => <hr className="border-white/10 my-10" />,
+                blockquote: ({...props}) => <blockquote className="bg-white/5 p-6 rounded-2xl border-l-4 border-gray-600 italic my-8 text-gray-400" {...props} />,
+              }}
+            >
+              {announcement.content}
+            </ReactMarkdown>
           </div>
         </div>
       </article>

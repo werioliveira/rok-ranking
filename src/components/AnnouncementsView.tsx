@@ -47,7 +47,7 @@ export default function AnnouncementsPage({ announcements = [] }: Props) {
           <span className="text-[10px] font-black uppercase tracking-[0.5em] text-[#d4af37]">Intel Protocol</span>
         </div>
         <h1 className="text-6xl font-black uppercase tracking-tighter text-white">
-          Board of <span className="text-[#d4af37]">Orders</span>
+          Board of <span className="text-[#d4af37]">Announcements</span>
         </h1>
       </div>
 
@@ -61,13 +61,14 @@ export default function AnnouncementsPage({ announcements = [] }: Props) {
                 
                 <div className="flex flex-col gap-4">
                   <div className="flex justify-between items-center">
-                    <span className={`text-[9px] font-black px-3 py-1 rounded-lg uppercase tracking-[0.2em] border ${
-                      item.priority === 'high' 
-                        ? 'border-red-500/50 text-red-500 bg-red-500/5' 
-                        : 'border-[#d4af37]/30 text-[#d4af37]'
-                    }`}>
-                      {item.tag}
-                    </span>
+{/* Substitua a parte da TAG por esta para testar */}
+<span className={`text-[9px] font-black px-3 py-1 rounded-lg uppercase tracking-[0.2em] border ${
+  item.priority === 'high' 
+    ? 'border-red-500/50 text-red-500 bg-red-500/5' 
+    : 'border-[#d4af37]/30 text-[#d4af37]'
+}`}>
+  {item.tag || "INTEL"} {/* Se item.tag for nulo, mostrará INTEL */}
+</span>
                     <span className="text-[10px] font-bold text-gray-600 uppercase tracking-widest font-mono">
                       {item.date}
                     </span>
