@@ -154,3 +154,21 @@ model MGERequest {
   @@index([eventId])
   @@unique([userId, eventId])
 }
+model Announcement {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  title     String   // No SQLite, String já suporta textos longos
+  summary   String   // Removido o @db.Text
+  content   String   // Removido o @db.LongText
+  
+  tag       String   @default("General")
+  category  String   @default("System")
+  priority  String   @default("low")
+  
+  author    String
+  published Boolean  @default(true)
+  
+  @@map("announcements")
+}
