@@ -51,4 +51,3 @@ export function isValidCPF(cpf: string): boolean {
 
   return digit2 === parseInt(cpf.charAt(10));
 }
-
