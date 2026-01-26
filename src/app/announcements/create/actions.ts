@@ -32,7 +32,7 @@ export async function createAnnouncement(formData: FormData) {
       tag,
       category,
       priority,
-      author,
+      author: author as string,
       published: true,
     },
   });
