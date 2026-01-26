@@ -146,7 +146,7 @@ export default function LoginPage() {
               href="/signup"
               className="text-primary hover:text-primary-glow font-semibold transition-colors"
             >
-              Request Access
+              Create Account
             </a>
           </div>
         </CardFooter>

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, Home, Sword, Menu, X, BookText, Calculator, BarChart3, Mail, Trophy, ShieldAlert, Calendar } from "lucide-react";
+import { ChevronDown, Home, Sword, Menu, X, BookText, Calculator, BarChart3, Mail, Trophy, ShieldAlert, Calendar, Megaphone } from "lucide-react";
 import { LoginButton } from "./LoginButton";
 
 export default function Header() {
@@ -72,6 +72,9 @@ export default function Header() {
                 </Link>
                 <Link href="/calendar" className="flex items-center px-4 py-2 text-sm hover:bg-muted" onClick={() => setIsToolsOpen(false)}>
                   <Calendar className="w-4 h-4 mr-2 text-amber-400" /> Calendar
+                </Link>
+                <Link href="/announcements" className="flex items-center px-4 py-2 text-sm hover:bg-muted" onClick={() => setIsToolsOpen(false)}>
+                  <Megaphone className="w-4 h-4 mr-2 text-amber-400" /> Announcements
                 </Link>
                 <div className="h-px bg-muted my-1" />
                 <Link href="/tools/mge" className="flex items-center px-4 py-2 text-sm hover:bg-muted" onClick={() => setIsToolsOpen(false)}>
@@ -146,6 +149,9 @@ export default function Header() {
                 </Link>
                 <Link href="/calendar" onClick={() => setMobileMenu(false)} className="flex items-center gap-3 text-lg font-medium">
                   <Calendar className="w-5 h-5 text-amber-400" /> Calendar
+                </Link>
+                <Link href="/announcements" onClick={() => setMobileMenu(false)} className="flex items-center gap-3 text-lg font-medium">
+                  <Megaphone className="w-5 h-5 text-amber-400" /> Announcements
                 </Link>
                 <Link href="/tools/mge" onClick={() => setMobileMenu(false)} className="flex items-center gap-3 text-lg font-medium">
                   <ShieldAlert className="w-5 h-5 text-red-400" /> MGE Request

@@ -131,6 +131,9 @@ export default function SignUpPage() {
           <div className="text-[10px] text-muted-foreground bg-muted/30 p-3 rounded-lg border border-border leading-tight">
             By creating an account, you agree to our Terms of Service and Privacy Policy.
           </div>
+          <div className="text-[10px] text-muted-foreground bg-muted/30 p-3 rounded-lg border border-border leading-tight">
+            By creating an account, you will have access immediately.
+          </div>
         </CardContent>
 
         <CardFooter className="flex flex-col space-y-4">
@@ -145,7 +148,7 @@ export default function SignUpPage() {
                 Forging Alliance...
               </div>
             ) : (
-              'Claim Throne'
+              'Register'
             )}
           </Button>
 

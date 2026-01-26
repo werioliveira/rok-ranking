@@ -7,8 +7,10 @@ import { PlayerCard } from "./PlayerCard";
 import { RankingHeader } from "./RankingHeader";
 import { PaginationPages } from "./PaginationPages";
 import { Loader2, Search, X } from "lucide-react";
+import { LatestAnnouncements } from "./LatestAnnouncements";
 
-export const PlayerRanking = ({ kvk }: { kvk?: string }) => {
+
+export const PlayerRanking = ({ kvk, announcements }: { kvk?: string, announcements?: any[]}) => {
   const [players, setPlayers] = useState<Player[]>([]);
   const [sortField, setSortField] = useState<SortField>("Power");
   const [currentPage, setCurrentPage] = useState(1);
@@ -151,6 +153,7 @@ export const PlayerRanking = ({ kvk }: { kvk?: string }) => {
     return (
       <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
         <div className="container mx-auto px-4 py-8">
+          
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="flex items-center gap-2">
               <Loader2 className="h-6 w-6 animate-spin" />
@@ -165,6 +168,7 @@ export const PlayerRanking = ({ kvk }: { kvk?: string }) => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
       <div className="container mx-auto px-4 py-8">
+        
         <RankingHeader
           sortField={sortField}
           sortOrder={sortOrder}
@@ -174,7 +178,7 @@ export const PlayerRanking = ({ kvk }: { kvk?: string }) => {
           dateRange={dateRange}
           onDateRangeChange={handleDateRangeChange}
         />
-
+        <LatestAnnouncements announcements={announcements} />
         {lastUpdated && (
           <div className="flex justify-center mb-6">
             <span className="px-4 py-2 border-2 border-yellow-400 text-yellow-400 bg-gray-900 rounded-lg font-semibold text-sm shadow-md shadow-yellow-500/50 animate-pulse">

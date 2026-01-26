@@ -1,0 +1,86 @@
+"use client";
+import React from 'react';
+import Link from 'next/link';
+import { Announcement } from '@/components/AnnouncementsView';
+import { deleteAnnouncement } from '@/app/announcements/create/actions';
+
+export default function AnnouncementDetail({ announcement }: { announcement: Announcement }) {
+  
+  if (!announcement) {
+    return (
+      <div className="max-w-[1000px] mx-auto p-20 bg-[#08090a] min-h-screen text-center">
+         <h1 className="text-[#d4af37] font-black uppercase tracking-widest text-2xl">Signal Lost</h1>
+         <Link href="/announcements" className="mt-8 inline-block text-[#d4af37] border-b border-[#d4af37] pb-1 text-[10px] font-black uppercase">Return to Feed</Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-[1000px] mx-auto p-4 md:p-20 bg-[#08090a] text-[#d1d5db] min-h-screen font-sans antialiased">
+      
+      <div className="flex justify-between items-center mb-12">
+        <Link href="/announcements" className="inline-flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 hover:text-[#d4af37] transition-colors group">
+          <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24" className="group-hover:-translate-x-1 transition-transform">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+          Return to Feed
+        </Link>
+
+        {/* BOTÃO DE DELETE (Admin Only) */}
+        <form action={deleteAnnouncement} onSubmit={(e) => {
+          if(!confirm("PERMANENTLY DELETE THIS INTEL REPORT?")) e.preventDefault();
+        }}>
+          <input type="hidden" name="id" value={announcement.id} />
+          <button 
+            type="submit"
+            className="text-[9px] font-black uppercase tracking-widest text-red-900 hover:text-red-500 transition-colors border border-red-900/30 px-3 py-1 rounded-lg hover:bg-red-500/5"
+          >
+            Delete Notice
+          </button>
+        </form>
+      </div>
+
+      <article>
+        <header className="mb-12">
+          <div className="flex items-center gap-4 mb-6">
+            <span className="bg-[#d4af37] text-black text-[9px] font-black px-3 py-1 rounded uppercase">
+              {announcement.category}
+            </span>
+            <span className="text-gray-600 font-mono text-xs font-bold uppercase tracking-widest">
+              Released: {announcement.date}
+            </span>
+          </div>
+          
+          <h1 className="text-5xl md:text-7xl font-black text-white uppercase tracking-tighter leading-none mb-8">
+            {announcement.title}
+          </h1>
+
+          <div className="flex items-center gap-3 p-4 bg-white/5 rounded-2xl border border-white/5 w-fit">
+            <div className="w-8 h-8 rounded-full bg-[#d4af37] flex items-center justify-center text-black font-black uppercase">
+              {announcement.author ? announcement.author[0] : 'A'}
+            </div>
+            <div>
+              <p className="text-[10px] font-black text-[#d4af37] uppercase leading-none mb-1">Author</p>
+              <p className="text-xs font-bold text-white uppercase">{announcement.author}</p>
+            </div>
+          </div>
+        </header>
+
+        <div className="prose prose-invert max-w-none">
+          <p className="text-xl text-gray-400 font-medium leading-relaxed mb-8 italic border-l-4 border-[#d4af37] pl-6">
+            {announcement.summary}
+          </p>
+          
+          <div className="text-lg text-gray-300 leading-loose space-y-6 font-sans whitespace-pre-wrap">
+             {announcement.content}
+          </div>
+        </div>
+      </article>
+
+      <footer className="mt-20 pt-10 border-t border-white/5 flex flex-col items-center">
+        <div className="w-12 h-1 bg-[#d4af37]/20 rounded-full mb-6" />
+        <p className="text-[10px] font-black text-gray-600 uppercase tracking-[0.5em]">End of Transmission</p>
+      </footer>
+    </div>
+  );
+}

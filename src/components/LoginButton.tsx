@@ -2,7 +2,7 @@
 
 import { signIn, signOut, useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
-import { LogOut, LayoutDashboard, ClipboardList, ShieldCheck, UserPlus } from "lucide-react";
+import { LogOut, LayoutDashboard, ClipboardList, ShieldCheck, UserPlus, Megaphone } from "lucide-react";
 import clsx from "clsx";
 import Link from "next/link";
 
@@ -102,6 +102,14 @@ export function LoginButton() {
                 >
                   <LayoutDashboard className="w-4 h-4" />
                   Organize Ranking
+                </Link>
+                <Link
+                  href="/admin/announcements/create"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-3 px-3 py-2 text-sm text-slate-300 hover:bg-amber-500/10 hover:text-amber-500 rounded-md transition-colors"
+                >
+                  <Megaphone className="w-4 h-4" />
+                  Create Announcement
                 </Link>
               </>
             )}
