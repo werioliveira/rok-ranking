@@ -117,7 +117,7 @@ export const RECURRING_PATTERNS = [
   {
     "title": "Champions of Olympia",
     "color": "#a6ff73",
-    "patterns": [{ "startDate": "2025-01-31", "frequency": 1, "duration": 2 }]
+    "patterns": [{ "startDate": "2025-02-01", "frequency": 1, "duration": 2 }]
   }
 ];
 
