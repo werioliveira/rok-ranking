@@ -82,3 +82,32 @@ export async function getLatestAnnouncements(limit = 2) {
     return [];
   }
 }
+export async function updateAnnouncement(formData: FormData) {
+  const session = await getServerSession(authOptions);
+  if (!session || session.user.role !== "ADMIN") {
+    throw new Error("Unauthorized");
+  }
+
+  const id = formData.get("id") as string;
+  const title = formData.get("title") as string;
+  const summary = formData.get("summary") as string;
+  const content = formData.get("content") as string;
+  const tag = formData.get("tag") as string;
+  const category = formData.get("category") as string;
+  const priority = formData.get("priority") as string;
+
+  await prisma.announcement.update({
+    where: { id },
+    data: {
+      title,
+      summary,
+      content,
+      tag,
+      category,
+      priority,
+    },
+  });
+
+  revalidatePath("/announcements");
+  revalidatePath(`/announcements/${id}`);
+}

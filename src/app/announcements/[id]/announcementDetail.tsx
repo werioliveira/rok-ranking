@@ -5,6 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Announcement } from '@/components/AnnouncementsView';
 import { deleteAnnouncement } from '@/app/announcements/create/actions';
+import EditAnnouncementModal from '@/components/EditAnnouncementModal';
 
 export default function AnnouncementDetail({ announcement }: { announcement: Announcement }) {
   
@@ -27,7 +28,7 @@ export default function AnnouncementDetail({ announcement }: { announcement: Ann
           </svg>
           Return to Feed
         </Link>
-
+        <EditAnnouncementModal announcement={announcement} />
         {/* BOTÃO DE DELETE */}
         <form action={deleteAnnouncement} onSubmit={(e) => {
           if(!confirm("PERMANENTLY DELETE THIS INTEL REPORT?")) e.preventDefault();
