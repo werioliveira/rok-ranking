@@ -44,8 +44,11 @@ export const RECURRING_PATTERNS = [
     "title": "20 Gold Head Event",
     "color": "#de4d40",
     "patterns": [
-      { "startDate": "2024-01-11", "frequency": 4, "duration": 2 },
-      { "startDate": "2024-01-25", "frequency": 4, "duration": 2 }
+      { 
+        "startDate": "2026-02-01", 
+        "frequency": 4, 
+        "duration": 2 
+      }
     ]
   },
   {
@@ -99,7 +102,7 @@ export const RECURRING_PATTERNS = [
     "title": "Realm of Mystique",
     "color": "#FFC0CB",
     "patterns": [{ 
-      "startDate": "2026-02-08", 
+      "startDate": "2026-02-02", 
       "frequency": 4, 
       "duration": 2 
     }]
