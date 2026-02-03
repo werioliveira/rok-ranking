@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { setMGERank } from "@/lib/actions/mge";
 import { Trophy, Star, AlertTriangle, Target } from "lucide-react";
 import RankForm from "./RankForm";
+import ExportRankingButton from "./ExportRankingButton";
 
 export default async function MGERankingPage() {
   const session = await getSession();
@@ -44,6 +45,12 @@ export default async function MGERankingPage() {
                 ? `Managing positions for: ${activeEvent.name}` 
                 : "No active event selected"}
             </p>
+            {activeEvent && acceptedRequests.length > 0 && (
+              <ExportRankingButton 
+                players={acceptedRequests} 
+                eventName={activeEvent.name} 
+              />
+            )}
           </div>
           <div className="bg-slate-900 border border-slate-800 px-4 py-2 rounded-lg text-sm font-bold text-slate-400">
              KvK {kvkId}
