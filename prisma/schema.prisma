@@ -143,6 +143,7 @@ model MGERequest {
 
   status     MGEStatus @default(PENDING)
   score      Int?      // Ranking 1-10
+  targetPoints BigInt? // A meta de pontos (ex: 20000000)
   createdAt  DateTime  @default(now())
   reviewedAt DateTime?
   reviewedBy String?   // Nome do Admin que revisou

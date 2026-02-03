@@ -22,8 +22,12 @@ export async function createMGERequest(formData: FormData) {
   const playerName = formData.get("name")?.toString();
   const playerId = formData.get("playerId")?.toString();
   const commanderName = formData.get("commander")?.toString();
-  const commanderState = formData.get("commanderStatus")?.toString();
+  const rawCommanderState = formData.get("commanderStatus")?.toString(); // Pegamos o valor bruto
   const reason = formData.get("reason")?.toString();
+  // LÓGICA DE PADRONIZAÇÃO: Se vazio, vira 0000
+  const commanderState = (!rawCommanderState || rawCommanderState.trim() === "") 
+  ? "0000" 
+  : rawCommanderState;
 
   // 2. VERIFICAÇÃO DE EVENTO ATIVO
   const activeEvent = await prisma.mGEEvent.findFirst({ where: { active: true } });
@@ -61,7 +65,7 @@ export async function createMGERequest(formData: FormData) {
         playerName,
         playerId,
         commanderName,
-        commanderState: commanderState || "N/A",
+        commanderState: commanderState,
         reason,
         status: isAdminEntry ? MGEStatus.ACCEPTED : MGEStatus.PENDING,
       },

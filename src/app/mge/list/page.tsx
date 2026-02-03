@@ -1,19 +1,18 @@
 export const dynamic = 'force-dynamic';
 import { getPrismaClient } from "@/lib/prisma";
-import { Trophy, Info } from "lucide-react";
+import { Trophy, Info, Target } from "lucide-react";
+import { formatNumber } from "@/lib/utils"; // Certifique-se de que o path está correto
 
 export default async function MGEPublicListPage() {
   const kvkId = process.env.KVK_DB_VERSION || "1";
   const prisma = getPrismaClient(kvkId);
 
-  // 1. Busca o evento mais recente (pode ser o ativo ou o último fechado)
   const lastEvent = await prisma.mGEEvent.findFirst({
     orderBy: { createdAt: "desc" },
   });
 
   const maxSlots = lastEvent?.slots || 15;
 
-  // 2. Busca os requests aceitos com ranking definido para este evento
   const finalList = lastEvent
     ? await prisma.mGERequest.findMany({
         where: {
@@ -39,7 +38,6 @@ export default async function MGEPublicListPage() {
             <p className="text-amber-500 font-bold uppercase tracking-widest">
               {lastEvent.name}
             </p>
-            {/* Badge de status para informar se ainda está aberto ou se é o resultado final */}
             <span className={lastEvent.active 
               ? "text-[10px] bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-2 py-0.5 rounded uppercase font-black"
               : "text-[10px] bg-slate-500/10 text-slate-500 border border-slate-500/20 px-2 py-0.5 rounded uppercase font-black"
@@ -53,7 +51,6 @@ export default async function MGEPublicListPage() {
         <p className="text-slate-500 text-sm mt-2">KvK {kvkId} - Selected Governors</p>
       </div>
 
-      {/* Só mostramos a tabela se houver um evento e se o admin já tiver atribuído algum score */}
       {!lastEvent || finalList.length === 0 ? (
         <div className="bg-[#111] border border-slate-800 rounded-2xl p-10 text-center">
           <Info className="mx-auto h-8 w-8 text-slate-600 mb-3" />
@@ -65,12 +62,13 @@ export default async function MGEPublicListPage() {
         </div>
       ) : (
         <div className="bg-[#111] border border-slate-800 rounded-2xl overflow-hidden shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-700">
-          <table className="w-full text-left">
+          <table className="w-full text-left border-collapse">
             <thead className="bg-slate-900/50 border-b border-slate-800">
               <tr>
                 <th className="p-4 font-bold text-amber-500 uppercase text-xs tracking-wider">Rank</th>
                 <th className="p-4 font-bold uppercase text-xs tracking-wider">Governor</th>
                 <th className="p-4 font-bold uppercase text-xs tracking-wider">Commander</th>
+                <th className="p-4 font-bold uppercase text-xs tracking-wider text-center">Target Score</th>
                 <th className="p-4 font-bold uppercase text-xs tracking-wider text-right">Governor ID</th>
               </tr>
             </thead>
@@ -87,8 +85,24 @@ export default async function MGEPublicListPage() {
                     {player.playerName}
                   </td>
                   <td className="p-4 text-slate-300">
+                    <span className="text-xs text-slate-500 block text-[10px] uppercase tracking-tighter">Target:</span>
                     {player.commanderName}
                   </td>
+                  
+                  {/* COLUNA DE PONTOS AJUSTADA */}
+                  <td className="p-4 text-center">
+                    {player.targetPoints ? (
+                      <div className="inline-flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-full">
+                        <Target size={12} className="text-amber-500" />
+                        <span className="text-sm font-black text-amber-500 font-mono">
+                          {formatNumber(Number(player.targetPoints))}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-slate-700 text-xs italic">Not set</span>
+                    )}
+                  </td>
+
                   <td className="p-4 text-xs font-mono text-slate-500 text-right">
                     {player.playerId}
                   </td>

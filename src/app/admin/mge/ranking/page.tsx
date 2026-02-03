@@ -2,7 +2,8 @@ import { getSession } from "@/lib/getSession";
 import { getPrismaClient } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { setMGERank } from "@/lib/actions/mge";
-import { Trophy, Star, AlertTriangle } from "lucide-react";
+import { Trophy, Star, AlertTriangle, Target } from "lucide-react";
+import RankForm from "./RankForm";
 
 export default async function MGERankingPage() {
   const session = await getSession();
@@ -84,35 +85,14 @@ export default async function MGERankingPage() {
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <form 
-                      key={`${r.id}-${r.score}`} 
-                      action={async (formData) => {
-                        "use server";
-                        const val = formData.get("rank");
-                        const rank = val === "none" ? null : parseInt(val as string);
-                        await setMGERank(r.id, rank);
-                      }} 
-                      className="flex gap-2"
-                    >
-                      <select 
-                        name="rank" 
-                        defaultValue={r.score || "none"}
-                        className="bg-slate-900 border border-slate-700 text-sm rounded-lg px-3 py-2 text-white outline-none focus:border-amber-500"
-                      >
-                        <option value="none">No Rank</option>
-                        {[...Array(maxSlots)].map((_, i) => (
-                          <option key={i + 1} value={i + 1}>Rank {i + 1}</option>
-                        ))}
-                      </select>
-                      <button 
-                        type="submit"
-                        className="bg-amber-600 hover:bg-amber-500 text-black px-4 py-2 rounded-lg font-bold text-sm transition-all"
-                      >
-                        Save
-                      </button>
-                    </form>
-                  </div>
+<div className="flex items-center gap-2">
+<RankForm 
+    requestId={r.id}
+    currentRank={r.score}
+    currentPoints={r.targetPoints ? Number(r.targetPoints) : null}
+    maxSlots={maxSlots}
+  />
+</div>
                 </div>
               ))
             )}

@@ -32,20 +32,29 @@ export async function updateMGERequestStatus(id: string, status: MGEStatus) {
 /**
  * Assigns a specific rank (1-10) to an approved request
  */
-export async function setMGERank(id: string, rank: number | null) {
+export async function setMGERank(id: string, rank: number | null, points: number | null) {
   const session = await getSession();
-  if (!session || session.user.role !== "ADMIN") return;
+  if (!session || session.user.role !== "ADMIN") return { error: "Unauthorized" };
 
   const kvkId = process.env.KVK_DB_VERSION || "1";
   const prisma = getPrismaClient(kvkId);
 
-  await prisma.mGERequest.update({
-    where: { id },
-    data: { score: rank }
-  });
+  try {
+    await prisma.mGERequest.update({
+      where: { id },
+      data: { 
+        score: rank,
+        targetPoints: points ? BigInt(points) : null 
+      }
+    });
 
-  revalidatePath("/admin/mge/ranking");
-  revalidatePath("/tools/mge/list"); // Update public list if it exists
+    revalidatePath("/admin/mge/ranking");
+    revalidatePath("/tools/mge/list");
+    return { success: true };
+  } catch (error) {
+    console.error(error);
+    return { error: "Failed to update ranking" };
+  }
 }
 
 /**

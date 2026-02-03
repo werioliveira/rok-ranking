@@ -13,6 +13,8 @@ type Props = {
 export default function MGEForm({ userName, isAdminMode = false }: Props) {
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [nameSuggestions, setNameSuggestions] = useState<{playerId: string, name: string}[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
   const [playerId, setPlayerId] = useState("");
@@ -24,40 +26,60 @@ export default function MGEForm({ userName, isAdminMode = false }: Props) {
   const [reason, setReason] = useState("");
   const charLimit = 300;
   const isSkillsValid = commanderStatus.length === 4;
-  const canSubmit = idFound && isSkillsValid && reason.length > 0 && !isPending;
+  const canSubmit = idFound && reason.length > 0 && !isPending;
 
-  // Busca automática do Player pelo ID
   useEffect(() => {
+    if (!isAdminMode || playerName.length < 3 || idFound) {
+      setNameSuggestions([]);
+      return;
+    }
+
+    const timeoutId = setTimeout(async () => {
+      const res = await fetch(`/api/players/search?q=${encodeURIComponent(playerName)}`);
+      if (res.ok) {
+        const data = await res.ok ? await res.json() : [];
+        setNameSuggestions(data);
+        setShowSuggestions(data.length > 0);
+      }
+    }, 400);
+
+    return () => clearTimeout(timeoutId);
+  }, [playerName, isAdminMode, idFound]);
+
+useEffect(() => {
+  // Se já encontramos o ID (via busca de nome), não dispare a busca por ID novamente
+  if (idFound || playerId.length < 7) {
     if (playerId.length < 7) {
       setSearchDone(false);
       setIdFound(false);
       setPlayerName("");
-      return;
     }
+    return;
+  }
 
-    const delayDebounceFn = setTimeout(async () => {
-      setIsSearching(true);
-      try {
-        const response = await fetch(`/api/players/lookup/${playerId}`);
-        if (response.ok) {
-          const data = await response.json();
-          setPlayerName(data.name);
-          setIdFound(true);
-        } else {
-          setIdFound(false);
-          setPlayerName("ID not registered"); 
-        }
-      } catch (error) {
+  const delayDebounceFn = setTimeout(async () => {
+    setIsSearching(true);
+    try {
+      const response = await fetch(`/api/players/lookup/${playerId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setPlayerName(data.name || "");
+        setIdFound(true);
+      } else {
         setIdFound(false);
-        setPlayerName("Search error");
-      } finally {
-        setIsSearching(false);
-        setSearchDone(true);
+        setPlayerName("ID not registered"); 
       }
-    }, 600);
+    } catch (error) {
+      setIdFound(false);
+      setPlayerName("Search error");
+    } finally {
+      setIsSearching(false);
+      setSearchDone(true);
+    }
+  }, 600);
 
-    return () => clearTimeout(delayDebounceFn);
-  }, [playerId]);
+  return () => clearTimeout(delayDebounceFn);
+}, [playerId, idFound]); // Adicione idFound nas dependências
 
   async function handleSubmit(formData: FormData) {
     if (!canSubmit) return;
@@ -78,7 +100,13 @@ export default function MGEForm({ userName, isAdminMode = false }: Props) {
       }
     });
   }
-
+  const handleSelectPlayer = (p: {playerId: string, name: string}) => {
+    setPlayerId(p.playerId);
+    setPlayerName(p.name);
+    setIdFound(true);
+    setSearchDone(true);
+    setShowSuggestions(false);
+  };
   return (
     <form ref={formRef} action={handleSubmit} className="space-y-6 bg-[#0f0f0f] border border-slate-800 rounded-xl p-6 shadow-2xl">
       
@@ -128,23 +156,48 @@ export default function MGEForm({ userName, isAdminMode = false }: Props) {
         </div>
 
         {/* USERNAME (READONLY) */}
-        <div>
+        <div className="relative">
           <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">
-            Username
+            Username {isAdminMode && !idFound && "(Searchable)"}
           </label>
           <input
             name="name"
             value={playerName}
-            readOnly
+            onChange={(e) => {
+                if(isAdminMode) {
+                    setPlayerName(e.target.value);
+                    if(idFound) setIdFound(false); // Reseta se o admin voltar a digitar
+                }
+            }}
+            readOnly={!isAdminMode}
             required
-            placeholder={isSearching ? "Searching database..." : "Waiting for valid ID..."}
+            placeholder={isAdminMode ? "Type player name..." : "Waiting for ID..."}
             className={clsx(
               "w-full rounded-lg border px-4 py-3 outline-none transition-all font-bold",
               idFound 
                 ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" 
-                : "bg-slate-900/20 border-slate-800 text-slate-600 cursor-not-allowed"
+                : isAdminMode 
+                  ? "bg-slate-900/40 border-slate-800 text-white focus:border-amber-500"
+                  : "bg-slate-900/20 border-slate-800 text-slate-600 cursor-not-allowed"
             )}
           />
+
+          {/* Lista de Sugestões (Dropdown) */}
+          {isAdminMode && showSuggestions && (
+            <div className="absolute z-50 w-full mt-1 bg-slate-900 border border-slate-700 rounded-lg shadow-xl overflow-hidden">
+              {nameSuggestions.map((p) => (
+                <button
+                  key={p.playerId}
+                  type="button"
+                  onClick={() => handleSelectPlayer(p)}
+                  className="w-full px-4 py-3 text-left hover:bg-amber-500/10 flex justify-between items-center group transition-colors"
+                >
+                  <span className="text-sm font-bold text-slate-200 group-hover:text-amber-500">{p.name}</span>
+                  <span className="text-[10px] font-mono text-slate-500 group-hover:text-amber-500/50">ID: {p.playerId}</span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* TARGET COMMANDER */}
@@ -160,22 +213,22 @@ export default function MGEForm({ userName, isAdminMode = false }: Props) {
           />
         </div>
 
-        {/* SKILLS - 4 DIGITS ONLY */}
+        {/* SKILLS - 4 DIGITS OPTIONAL */}
         <div>
           <label className="flex items-center text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">
-            <Shield className="w-3 h-3 mr-1 text-amber-500" /> Skills (Ex: 5511)
+            <Shield className="w-3 h-3 mr-1 text-amber-500" /> Skills (Optional - Ex: 5511)
           </label>
           <input
             name="commanderStatus"
             type="text"
             inputMode="numeric"
-            required
             value={commanderStatus}
-            placeholder="----"
+            placeholder="0000"
             onChange={(e) => setCommanderStatus(e.target.value.replace(/[^0-9]/g, '').slice(0, 4))}
             className={clsx(
               "w-full rounded-lg border px-4 py-3 bg-slate-900/40 text-white tracking-[1em] font-mono focus:border-amber-500 outline-none transition-all text-center pl-7",
-              commanderStatus.length > 0 && !isSkillsValid ? "border-red-500/50" : "border-slate-800"
+              // Ajuste a validação: Só fica vermelho se tiver algo digitado E não for 4 dígitos
+              commanderStatus.length > 0 && commanderStatus.length < 4 ? "border-red-500/50" : "border-slate-800"
             )}
           />
         </div>
