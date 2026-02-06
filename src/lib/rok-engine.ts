@@ -36,8 +36,8 @@ export const RECURRING_PATTERNS = [
     "title": "Egg / Hammer Event",
     "color": "#4c89a6",
     "patterns": [
-      { "startDate": "2024-01-11", "frequency": 4, "duration": 2 },
-      { "startDate": "2024-01-25", "frequency": 4, "duration": 2 }
+      { "startDate": "2024-01-12", "frequency": 4, "duration": 2 },
+      { "startDate": "2024-01-26", "frequency": 4, "duration": 2 }
     ]
   },
   {
@@ -46,6 +46,11 @@ export const RECURRING_PATTERNS = [
     "patterns": [
       { 
         "startDate": "2026-02-01", 
+        "frequency": 4, 
+        "duration": 2 
+      },
+      { 
+        "startDate": "2026-02-06", 
         "frequency": 4, 
         "duration": 2 
       }
