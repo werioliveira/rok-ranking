@@ -99,7 +99,7 @@ export const RECURRING_PATTERNS = [
     "color": "#6b9a89", 
     "patterns": [{ 
       "startDate": "2026-01-26", 
-      "frequency": 4, 
+      "frequency": 2, 
       "duration": 3 
     }] 
   },
@@ -108,7 +108,7 @@ export const RECURRING_PATTERNS = [
     "color": "#FFC0CB",
     "patterns": [{ 
       "startDate": "2026-02-02", 
-      "frequency": 4, 
+      "frequency": 2, 
       "duration": 2 
     }]
   },
