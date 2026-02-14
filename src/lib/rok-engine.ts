@@ -79,7 +79,7 @@ export const RECURRING_PATTERNS = [
   {
     "title": "Esmeralda",
     "color": "#33FF57",
-    "patterns": [{ "startDate": "2025-03-16", "frequency": 8, "duration": 2 }]
+    "patterns": [{ "startDate": "2025-03-15", "frequency": 8, "duration": 2 }]
   },
 { 
     "title": "The Golden Kingdom", 
