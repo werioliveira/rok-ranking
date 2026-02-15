@@ -53,6 +53,11 @@ export const RECURRING_PATTERNS = [
         "startDate": "2026-02-06", 
         "frequency": 4, 
         "duration": 2 
+      },
+      { 
+        "startDate": "2026-02-14", 
+        "frequency": 4, 
+        "duration": 2 
       }
     ]
   },
