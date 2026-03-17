@@ -3,15 +3,14 @@
 import { getSession } from "@/lib/getSession";
 
 import { MGEStatus } from "@prisma/client";
-import { getPrismaClient } from "@/lib/prisma";
+import { getMainPrismaClient } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
 export async function createMGERequest(formData: FormData) {
   const session = await getSession();
   if (!session) return { error: "You must be logged in." };
 
-  const kvkId = process.env.KVK_DB_VERSION || "1";
-  const prisma = getPrismaClient(kvkId);
+    const prisma = getMainPrismaClient();
 
 
 // LOGS PARA DEBUG (Confira no terminal do VS Code/CMD)

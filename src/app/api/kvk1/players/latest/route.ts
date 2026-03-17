@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 
-import { getPrismaClient } from "@/lib/prisma";
+import { getKvkPrismaClient } from "@/lib/prisma";
 
-const prisma = getPrismaClient("1");
+const prisma = getKvkPrismaClient("1");
 
 // Serializa valores que podem quebrar JSON.stringify (bigint, Date)
 function serializeValue(v: any): any {

@@ -1,7 +1,7 @@
 "use server";
 
 import { getSession } from "@/lib/getSession";
-import { getPrismaClient } from "@/lib/prisma";
+import { getMainPrismaClient } from "@/lib/prisma";
 import { MGEStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
@@ -14,8 +14,7 @@ export async function updateMGERequestStatus(id: string, status: MGEStatus) {
     throw new Error("Unauthorized access.");
   }
 
-  const kvkId = process.env.KVK_DB_VERSION || "1";
-  const prisma = getPrismaClient(kvkId);
+    const prisma = getMainPrismaClient();
 
   await prisma.mGERequest.update({
     where: { id },
@@ -36,8 +35,7 @@ export async function setMGERank(id: string, rank: number | null, points: number
   const session = await getSession();
   if (!session || session.user.role !== "ADMIN") return { error: "Unauthorized" };
 
-  const kvkId = process.env.KVK_DB_VERSION || "1";
-  const prisma = getPrismaClient(kvkId);
+    const prisma = getMainPrismaClient();
 
   try {
     await prisma.mGERequest.update({
@@ -66,8 +64,7 @@ export async function createMGEEvent(name: string, slots: number, description?: 
     throw new Error("Unauthorized access.");
   }
 
-  const kvkId = process.env.KVK_DB_VERSION || "1";
-  const prisma = getPrismaClient(kvkId);
+    const prisma = getMainPrismaClient();
 
   // Deactivate any currently active event
   await prisma.mGEEvent.updateMany({
@@ -96,8 +93,7 @@ export async function createMGERequest(formData: FormData) {
   const session = await getSession();
   if (!session) return { error: "You must be logged in." };
 
-  const kvkId = process.env.KVK_DB_VERSION || "1";
-  const prisma = getPrismaClient(kvkId);
+    const prisma = getMainPrismaClient();
 
 
 // LOGS PARA DEBUG (Confira no terminal do VS Code/CMD)
@@ -171,7 +167,6 @@ export async function createMGERequest(formData: FormData) {
  * Utility to fetch the currently active MGE event
  */
 export async function getActiveEvent() {
-  const kvkId = process.env.KVK_DB_VERSION || "1";
-  const prisma = getPrismaClient(kvkId);
+    const prisma = getMainPrismaClient();
   return await prisma.mGEEvent.findFirst({ where: { active: true } });
 }

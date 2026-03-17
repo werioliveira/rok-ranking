@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { getKvkPrismaClient } from "@/lib/prisma";
 import * as XLSX from "xlsx";
 
-const prisma = new PrismaClient();
+const prisma = getKvkPrismaClient(process.env.KVK_DB_VERSION || "1");
 
 export async function POST(req: NextRequest) {
   try {

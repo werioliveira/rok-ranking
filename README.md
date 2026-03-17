@@ -84,15 +84,19 @@ yarn install
 
 ## ⚙ Environment Configuration
 
-The project requires only **one environment variable**.
+The project uses a **hybrid SQLite setup** with one global DB and one DB per KvK.
 
 Create a `.env` file based on `.env.example` and add:
 
 ```env
 UPLOAD_SECRET=your_upload_password
+DATABASE_URL="file:./prisma/main.db"
+KVK_DB_VERSION="1"
 ```
 
-This secret protects the upload routes.
+- `DATABASE_URL`: global database used for auth/session/MGE/announcements (default `main.db`)
+- `KVK_DB_VERSION`: selects the KvK database file (`kvk1.db`, `kvk2.db`, etc.) for snapshots
+- `UPLOAD_SECRET`: protects upload routes.
 
 ---
 ```env
@@ -105,14 +109,10 @@ this both .env is just needed to run analitics data from ackee ( selfhosted goog
 
 The system uses **SQLite**, which requires no external setup.
 
-`schema.prisma` uses:
+`schema.prisma` uses SQLite and the app now opens two kinds of files:
 
-```prisma
-datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
-}
-```
+- `main.db` (global): users/auth/session, MGE, announcements
+- `kvkX.db` (per KvK): player/kingdom raw performance snapshots
 
 ### Apply migrations and create the database
 

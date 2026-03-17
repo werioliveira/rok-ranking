@@ -1,29 +1,34 @@
 import { PrismaClient } from "@prisma/client";
-import path from "path";
 
-// Objeto para armazenar as instâncias já abertas (Singleton por banco)
-const prismaInstances: Record<string, PrismaClient> = {};
+const mainPrisma = new PrismaClient({
+  datasources: {
+    db: { url: "file:./prisma/main.db" },
+  },
+  log: ["error"],
+});
 
-export function getPrismaClient(kvkId: string) {
+const kvkPrismaInstances: Record<string, PrismaClient> = {};
+
+export function getMainPrismaClient() {
+  return mainPrisma;
+}
+
+export function getKvkPrismaClient(kvkId: string) {
   const dbName = `kvk${kvkId}`;
 
-  if (prismaInstances[dbName]) {
-    return prismaInstances[dbName];
+  if (kvkPrismaInstances[dbName]) {
+    return kvkPrismaInstances[dbName];
   }
 
-  // AJUSTE AQUI: Adicionamos o caminho da pasta prisma antes do nome do arquivo
-  // O prefixo 'file:./prisma/' garante que ele olhe na pasta correta a partir da raiz
-  const dbUrl = `file:./prisma/${dbName}.db`; 
-  
-  console.log(`🔌 Conectando ao banco: ${dbUrl} para o KvK: ${kvkId}`);
+  const dbUrl = `file:./prisma/${dbName}.db`;
 
   const newClient = new PrismaClient({
     datasources: {
       db: { url: dbUrl },
     },
-    log: ["error"], 
+    log: ["error"],
   });
 
-  prismaInstances[dbName] = newClient;
+  kvkPrismaInstances[dbName] = newClient;
   return newClient;
 }

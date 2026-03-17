@@ -1,6 +1,6 @@
 // app/api/players/import-reference/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { getPrismaClient } from "@/lib/prisma";
+import { getKvkPrismaClient } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const { players } = await req.json(); // Array vindo do XLSX.utils.sheet_to_json
-    const prisma = getPrismaClient(process.env.KVK_DB_VERSION || "3");
+    const prisma = getKvkPrismaClient(process.env.KVK_DB_VERSION || "3");
 
     // Upsert para atualizar o nome se o ID já existir ou criar novo
     const operations = players.map((p: any) => 

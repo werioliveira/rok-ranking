@@ -1,12 +1,12 @@
 // app/api/players/[playerId]/route.ts
 import { NextResponse } from "next/server"
 
-import { getPrismaClient } from "@/lib/prisma";
+import { getKvkPrismaClient } from "@/lib/prisma";
 
 const kvkId = process.env.KVK_DB_VERSION || "1";
 
   // Obtém o cliente específico para aquele banco
-const prisma = getPrismaClient(kvkId);
+const prisma = getKvkPrismaClient(kvkId);
 
 // Helper function para converter BigInt para Number recursivamente
 function convertBigIntAndDate(obj: any): any {

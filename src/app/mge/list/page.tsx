@@ -1,11 +1,11 @@
 export const dynamic = 'force-dynamic';
-import { getPrismaClient } from "@/lib/prisma";
+import { getMainPrismaClient } from "@/lib/prisma";
 import { Trophy, Info, Target } from "lucide-react";
 import { formatNumber } from "@/lib/utils"; // Certifique-se de que o path está correto
 
 export default async function MGEPublicListPage() {
   const kvkId = process.env.KVK_DB_VERSION || "1";
-  const prisma = getPrismaClient(kvkId);
+  const prisma = getMainPrismaClient();
 
   const lastEvent = await prisma.mGEEvent.findFirst({
     orderBy: { createdAt: "desc" },

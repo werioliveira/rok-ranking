@@ -1,11 +1,10 @@
 import NextAuth, { type NextAuthOptions } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcrypt";
-import { getPrismaClient } from "./prisma";
-const kvkId = process.env.KVK_DB_VERSION || "1";
+import { getMainPrismaClient } from "./prisma";
 
   // Obtém o cliente específico para aquele banco
-const prisma = getPrismaClient(kvkId);
+const prisma = getMainPrismaClient();
 
 export const authOptions: NextAuthOptions = {
   providers: [

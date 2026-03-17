@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getPrismaClient } from "@/lib/prisma";
+import { getKvkPrismaClient } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth"; // Verifique se o caminho do seu authOptions está correto
 
 const kvkId = process.env.KVK_DB_VERSION || "1";
-const prisma = getPrismaClient(kvkId);
+const prisma = getKvkPrismaClient(kvkId);
 
 export async function POST(req: NextRequest) {
   try {
