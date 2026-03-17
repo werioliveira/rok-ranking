@@ -64,6 +64,7 @@ export async function getAnnouncements() {
   try {
     const data = await prisma.announcement.findMany({
       orderBy: { createdAt: "desc" },
+      take: 2,
     });
 
     return data.map((item) => ({

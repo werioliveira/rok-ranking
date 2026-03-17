@@ -3,11 +3,11 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 import Footer from "@/components/Footer";
 import { PlayerRanking } from "@/components/PlayerRanking";
-import { getLatestAnnouncements } from "@/app/announcements/create/actions";
+import { getAnnouncements } from "@/app/announcements/create/actions";
 
 export default async function Home() {
   // Busca os últimos 2 anúncios diretamente no servidor
-  const announcements = await getLatestAnnouncements(2);
+  const announcements = await getAnnouncements();
   return (
     <div className="min-h-screen">
       {/* Passamos os anúncios como prop para o componente de cliente */}

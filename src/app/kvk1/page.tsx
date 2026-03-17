@@ -1,11 +1,13 @@
 import Footer from "@/components/Footer";
 import { PlayerRanking } from "@/components/PlayerRanking";
+import { getAnnouncements } from "../announcements/create/actions";
 
 
-export default function Home() {
+export default async function Home() {
+  const announcements = await getAnnouncements();
   return (
     <div className="min-h-screen">
-      <PlayerRanking kvk='kvk1'/>
+      <PlayerRanking kvk='kvk1' announcements={announcements}/>
       <Footer/>
     </div>
   );
