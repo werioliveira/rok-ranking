@@ -1,5 +1,5 @@
 import { getSession } from "@/lib/getSession";
-import { getPrismaClient } from "@/lib/prisma";
+import { getMainPrismaClient } from "@/lib/prisma";
 import { Clock, CheckCircle2, XCircle, ShieldAlert, Calendar, Swords, Tag } from "lucide-react";
 
 export default async function MyRequestsPage() {
@@ -15,7 +15,7 @@ export default async function MyRequestsPage() {
   }
 
   const kvkId = process.env.KVK_DB_VERSION || "1";
-  const prisma = getPrismaClient(kvkId);
+  const prisma = getMainPrismaClient();
 
   const myRequests = await prisma.mGERequest.findMany({
     where: { userId: session.user.id },

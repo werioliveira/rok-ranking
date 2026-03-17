@@ -1,10 +1,9 @@
 'use server';
 
 import bcrypt from "bcrypt";
-import { getPrismaClient } from "@/lib/prisma";
-const kvkId = process.env.KVK_DB_VERSION || "1";
+import { getMainPrismaClient } from "@/lib/prisma";
 
-const prisma = getPrismaClient(kvkId);
+const prisma = getMainPrismaClient();
 
 
 export async function signUp(email: string, password: string, name?: string) {

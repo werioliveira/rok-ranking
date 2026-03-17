@@ -1,5 +1,5 @@
 import { getSession } from "@/lib/getSession";
-import { getPrismaClient } from "@/lib/prisma";
+import { getMainPrismaClient } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { setMGERank } from "@/lib/actions/mge";
 import { Trophy, Star, AlertTriangle, Target } from "lucide-react";
@@ -11,7 +11,7 @@ export default async function MGERankingPage() {
   if (!session || session.user.role !== "ADMIN") redirect("/");
 
   const kvkId = process.env.KVK_DB_VERSION || "1";
-  const prisma = getPrismaClient(kvkId);
+  const prisma = getMainPrismaClient();
 
   const activeEvent = await prisma.mGEEvent.findFirst({
     where: { active: true }

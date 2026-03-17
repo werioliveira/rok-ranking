@@ -1,9 +1,9 @@
 // app/api/players/[playerId]/route.ts
 import { NextResponse } from "next/server"
 
-import { getPrismaClient } from "@/lib/prisma";
+import { getKvkPrismaClient } from "@/lib/prisma";
 
-const prisma = getPrismaClient("1");
+const prisma = getKvkPrismaClient("1");
 
 // Helper function para converter BigInt para Number recursivamente
 function convertBigIntAndDate(obj: any): any {

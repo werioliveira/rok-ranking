@@ -2,9 +2,9 @@
 
 import { NextResponse } from "next/server"
 
-import { getPrismaClient } from "@/lib/prisma";
+import { getKvkPrismaClient } from "@/lib/prisma";
 
-const prisma = getPrismaClient("2");
+const prisma = getKvkPrismaClient("2");
 
 // Helper function para converter BigInt para Number recursivamente
 function convertBigIntAndDate(obj: any): any {

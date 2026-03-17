@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { getKvkPrismaClient } from "@/lib/prisma";
 
-const prisma = new PrismaClient();
+const prisma = getKvkPrismaClient(process.env.KVK_DB_VERSION || "1");
 
 export async function GET(req: Request) {
     const url = new URL(req.url);
