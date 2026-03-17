@@ -38,6 +38,7 @@ const getRankBadgeVariant = (rank: number) => {
 };
 
 export const PlayerCard = ({ player, rank, kvk }: PlayerCardProps) => {
+  const CURRENT_KVK = process.env.NEXT_PUBLIC_KVK_DEFAULT || "kvk4";
   const killpointsGained = Number(player.killpointsGained) || 0;
   const t1Gained = Number(player.killpointsT1Gained) || 0;
   const t4t5Gained =
@@ -71,9 +72,9 @@ export const PlayerCard = ({ player, rank, kvk }: PlayerCardProps) => {
 <Link
     href={{
       pathname: `/player/${player.playerId}`,
-      // Se kvk for 'kvk3', não enviamos query string, mantendo a URL limpa (/)
+      // Se kvk for o atual, não enviamos query string, mantendo a URL limpa (/)
       // Caso contrário, enviamos o parâmetro normalmente
-      query: kvk && kvk !== "kvk3" ? { kvk } : undefined,
+      query: kvk && kvk !== CURRENT_KVK ? { kvk } : undefined,
     }}
     className="inline-flex items-center gap-2 px-2 py-1 rounded-lg transition-colors group-hover:bg-primary/10 group-hover:shadow-[0_0_8px_0_rgba(80,120,255,0.15)] group-hover:text-primary-glow"
   >

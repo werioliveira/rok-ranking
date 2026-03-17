@@ -9,6 +9,7 @@ export default function Header() {
   const [mobileMenu, setMobileMenu] = useState(false);
   const [isKvkOpen, setIsKvkOpen] = useState(false);
   const [isToolsOpen, setIsToolsOpen] = useState(false);
+  const kvkenv = process.env.NEXT_PUBLIC_KVK_DEFAULT || 1;
 
   const toolsRef = useRef<HTMLDivElement>(null);
   const kvkRef = useRef<HTMLDivElement>(null);
@@ -40,16 +41,30 @@ export default function Header() {
 
           {/* KVK DROPDOWN */}
           <div ref={kvkRef} className="relative">
-            <button onClick={() => setIsKvkOpen(!isKvkOpen)} className="flex items-center text-card-foreground hover:text-primary transition-colors text-sm font-medium">
+            <button 
+              onClick={() => setIsKvkOpen(!isKvkOpen)} 
+              className="flex items-center text-card-foreground hover:text-primary transition-colors text-sm font-medium"
+            >
               <Sword className="w-4 h-4 mr-1" /> KVK <ChevronDown className="ml-1 h-3 w-3" />
             </button>
+
             {isKvkOpen && (
               <div className="absolute right-0 mt-2 w-48 bg-popover border border-muted rounded-md shadow-lg z-[100] overflow-hidden">
-                {["KVK 1", "KVK 2", "KVK 3"].map((kvk, i) => (
-                  <Link key={i} href={i === 2 ? "/" : `/kvk${i + 1}`} className="block px-4 py-2 text-sm hover:bg-muted" onClick={() => setIsKvkOpen(false)}>
-                    {kvk} {i === 2 && "(Current)"}
-                  </Link>
-                ))}
+                {["KVK 1", "KVK 2", "KVK 3", "KVK 4"].map((kvk, i) => {
+                  const kvkNumber = i + 1; // Transforma índice 0-3 em 1-4
+                  const isCurrent = kvkNumber === Number(kvkenv); // Compara com a env
+
+                  return (
+                    <Link 
+                      key={i} 
+                      href={isCurrent ? "/" : `/kvk${kvkNumber}`} 
+                      className={`block px-4 py-2 text-sm hover:bg-muted ${isCurrent ? "font-bold text-primary" : ""}`}
+                      onClick={() => setIsKvkOpen(false)}
+                    >
+                      {kvk} {isCurrent && "(Current)"}
+                    </Link>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -130,8 +145,11 @@ export default function Header() {
                 <Link href="/kvk2" onClick={() => setMobileMenu(false)} className="flex items-center gap-3 text-lg font-medium">
                   <Sword className="w-5 h-5 text-amber-500" /> KVK 2
                 </Link>
+                <Link href="/kvk3" onClick={() => setMobileMenu(false)} className="flex items-center gap-3 text-lg font-medium">
+                  <Sword className="w-5 h-5 text-primary" /> KVK 3
+                </Link>
                 <Link href="/" onClick={() => setMobileMenu(false)} className="flex items-center gap-3 text-lg font-medium">
-                  <Sword className="w-5 h-5 text-primary" /> KVK 3 <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded">Live</span>
+                  <Sword className="w-5 h-5 text-primary" /> KVK 4 <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded">Live</span>
                 </Link>
               </div>
 
