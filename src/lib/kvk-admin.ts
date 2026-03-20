@@ -1,9 +1,12 @@
 "use server";
 
 import { execSync } from "node:child_process";
+import { existsSync } from "node:fs";
+import path from "node:path";
 
 import {
   getKvkBySlug,
+  getKvkDbFile,
   getKvkDbUrl,
   normalizeKvkSlug,
   registerKvk,
@@ -21,6 +24,10 @@ function runPrismaCommand(command: string, databaseUrl: string) {
   }).toString();
 }
 
+function getKvkDbAbsolutePath(slug: string) {
+  return path.join(process.cwd(), "prisma", getKvkDbFile(slug));
+}
+
 export async function createKvkDatabase(slugInput: string, name?: string, makeActive = true) {
   const slug = normalizeKvkSlug(slugInput);
   const existingKvk = await getKvkBySlug(slug);
@@ -30,16 +37,19 @@ export async function createKvkDatabase(slugInput: string, name?: string, makeAc
   }
 
   const databaseUrl = getKvkDbUrl(slug);
+  const databasePath = getKvkDbAbsolutePath(slug);
+  const databaseAlreadyExists = existsSync(databasePath);
 
-  try {
-    runPrismaCommand("npx prisma db push --skip-generate", databaseUrl);
-    runPrismaCommand("npx prisma generate", databaseUrl);
-  } catch (error) {
-    throw new Error(
-      error instanceof Error
-        ? `Falha ao inicializar ${slug.toUpperCase()}: ${error.message}`
-        : `Falha ao inicializar ${slug.toUpperCase()}.`
-    );
+  if (!databaseAlreadyExists) {
+    try {
+      runPrismaCommand("npx prisma db push --skip-generate", databaseUrl);
+    } catch (error) {
+      throw new Error(
+        error instanceof Error
+          ? `Falha ao inicializar ${slug.toUpperCase()}: ${error.message}`
+          : `Falha ao inicializar ${slug.toUpperCase()}.`
+      );
+    }
   }
 
   const kvk = await registerKvk({ slug, name });
@@ -48,5 +58,8 @@ export async function createKvkDatabase(slugInput: string, name?: string, makeAc
     await setActiveKvk(kvk.slug);
   }
 
-  return kvk;
+  return {
+    ...kvk,
+    databaseAlreadyExists,
+  };
 }

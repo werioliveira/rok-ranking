@@ -17,8 +17,9 @@ export default async function AdminKvkPage() {
           <p className="text-xs uppercase tracking-[0.3em] text-slate-500 mb-2">Admin</p>
           <h1 className="text-3xl font-black text-amber-500">KvK Database Control</h1>
           <p className="text-slate-400 mt-3 max-w-3xl">
-            Crie um novo KvK sem duplicar páginas ou rotas. O sistema registra o KvK,
-            inicializa o arquivo SQLite e permite marcar qualquer um como ativo.
+            Crie ou registre um KvK sem duplicar páginas ou rotas. Se o arquivo SQLite já
+            existir, o sistema apenas vincula esse KvK ao registro; se não existir, ele
+            inicializa um novo banco automaticamente.
           </p>
         </header>
 
@@ -26,7 +27,8 @@ export default async function AdminKvkPage() {
           <div>
             <h2 className="text-xl font-bold text-white">Create new KvK</h2>
             <p className="text-sm text-slate-400 mt-1">
-              Exemplo de slug: <span className="font-mono text-amber-400">kvk5</span>.
+              Exemplo de slug: <span className="font-mono text-amber-400">kvk5</span>. Se
+              <span className="font-mono text-amber-400"> prisma/kvk5.db </span> já existir, ele será reaproveitado.
             </p>
           </div>
 

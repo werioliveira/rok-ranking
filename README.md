@@ -122,7 +122,7 @@ You no longer need to create `src/app/kvk2`, `src/app/kvk3`, or new duplicated A
 
 - Open `/admin/kvk` as an admin
 - Create a new KvK slug such as `kvk5`
-- The system registers it, runs Prisma initialization for the new SQLite file, and can mark it as active automatically
+- If the `kvkX.db` file already exists, the system only registers it; otherwise it initializes the new SQLite file automatically
 - The active KvK becomes the default Home / upload / generic API target
 
 ### Apply migrations and create the database
