@@ -1,17 +1,17 @@
 "use server";
-import { authOptions } from "@/lib/auth";
-import { getPrismaClient } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
 
-const kvkId = process.env.KVK_DB_VERSION || "1";
-const prisma = getPrismaClient(kvkId);
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
+import { authOptions } from "@/lib/auth";
+import { getMainPrismaClient } from "@/lib/prisma";
+
+const prisma = getMainPrismaClient();
+
 export async function createAnnouncement(formData: FormData) {
-  // 1. Aqui você adicionaria sua lógica de verificação de ADMIN
-   const session = await getServerSession(authOptions);
+  const session = await getServerSession(authOptions);
   if (!session || session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -32,60 +32,56 @@ export async function createAnnouncement(formData: FormData) {
       tag,
       category,
       priority,
-      author: author as string,
+      author,
       published: true,
     },
   });
 
   revalidatePath("/announcements");
+  revalidatePath("/announcements/create");
   redirect("/announcements");
 }
+
 export async function deleteAnnouncement(formData: FormData) {
-   const session = await getServerSession(authOptions);
+  const session = await getServerSession(authOptions);
+
   if (!session || session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
   const id = formData.get("id") as string;
 
-  if (!id) return;
-
-  // Lógica de proteção: Aqui você verificaria se o usuário é Admin via Session
-  
   await prisma.announcement.delete({
-    where: { id: id },
+    where: { id },
   });
 
   revalidatePath("/announcements");
-  redirect("/announcements");
+  revalidatePath("/announcements/create");
+  redirect("/announcements/create");
 }
-export async function getLatestAnnouncements(limit = 2) {
+
+export async function getAnnouncements() {
   try {
     const data = await prisma.announcement.findMany({
-      where: { published: true },
-      orderBy: { createdAt: 'desc' },
-      take: limit,
+      orderBy: { createdAt: "desc" },
     });
 
-    return data.map(item => ({
-      id: item.id,
-      title: item.title,
-      summary: item.summary,
-      tag: item.tag,
-      priority: item.priority,
-      date: item.createdAt.toLocaleDateString('en-US', {
-        day: '2-digit',
-        month: 'short'
-      })
+    return data.map((item) => ({
+      ...item,
+      createdAt: item.createdAt.toISOString(),
+      updatedAt: item.updatedAt.toISOString(),
     }));
   } catch (error) {
-    console.error("Database error:", error);
+    console.error("Erro ao buscar anúncios:", error);
     return [];
   }
 }
+
 export async function updateAnnouncement(formData: FormData) {
   const session = await getServerSession(authOptions);
+
   if (!session || session.user.role !== "ADMIN") {
-    throw new Error("Unauthorized");
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const id = formData.get("id") as string;
@@ -109,5 +105,26 @@ export async function updateAnnouncement(formData: FormData) {
   });
 
   revalidatePath("/announcements");
-  revalidatePath(`/announcements/${id}`);
+  revalidatePath("/announcements/create");
+  redirect("/announcements/create");
+}
+
+
+export async function getLatestAnnouncements(limit = 2) {
+  try {
+    const data = await prisma.announcement.findMany({
+      where: { published: true },
+      orderBy: { createdAt: "desc" },
+      take: limit,
+    });
+
+    return data.map((item) => ({
+      ...item,
+      createdAt: item.createdAt.toISOString(),
+      updatedAt: item.updatedAt.toISOString(),
+    }));
+  } catch (error) {
+    console.error("Erro ao buscar últimos anúncios:", error);
+    return [];
+  }
 }

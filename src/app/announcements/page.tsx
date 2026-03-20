@@ -1,8 +1,7 @@
 // src/app/announcements/page.tsx
 import AnnouncementsView from "@/components/AnnouncementsView";
-import { getPrismaClient } from "@/lib/prisma";
-const kvkId = process.env.KVK_DB_VERSION || "1";
-const prisma = getPrismaClient(kvkId);
+import { getMainPrismaClient } from "@/lib/prisma";
+const prisma = getMainPrismaClient();
 // Força o Next.js a sempre buscar dados novos do banco
 export const revalidate = 0; 
 

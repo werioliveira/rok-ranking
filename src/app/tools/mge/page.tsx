@@ -1,15 +1,14 @@
 // src/app/tools/mge/page.tsx
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/getSession";
-import { getPrismaClient } from "@/lib/prisma"; 
+import { getMainPrismaClient } from "@/lib/prisma";
 import MGEForm from "./MGEForm";
 
 export default async function MGEPage() {
   const session = await getSession();
   if (!session) redirect("/login");
 
-  const kvkId = process.env.KVK_DB_VERSION || "1";
-  const prisma = getPrismaClient(kvkId);
+    const prisma = getMainPrismaClient();
 
   // Checks for an active event
   const activeEvent = await prisma.mGEEvent.findFirst({ where: { active: true } });

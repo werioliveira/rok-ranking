@@ -1,10 +1,11 @@
 // app/api/players/lookup/[id]/route.ts
 import { NextResponse } from "next/server";
-import { getPrismaClient } from "@/lib/prisma";
-
+import { getKvkPrismaClient } from "@/lib/prisma";
+import { resolveKvkSlug } from "@/lib/kvk-context";
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const prisma = getPrismaClient(process.env.KVK_DB_VERSION || "3");
+  const { searchParams } = new URL(req.url);
+  const prisma = getKvkPrismaClient(await resolveKvkSlug(searchParams.get("kvk")));
   let { id } = await params;
   const player = await prisma.playerData.findUnique({
     where: { playerId: id },

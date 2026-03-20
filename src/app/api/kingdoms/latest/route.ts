@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { getKvkPrismaClient } from "@/lib/prisma";
+import { resolveKvkSlug } from "@/lib/kvk-context";
 
 export async function GET(req: Request) {
     const url = new URL(req.url);
+    const prisma = getKvkPrismaClient(await resolveKvkSlug(url.searchParams.get("kvk")));
     const orderBy = url.searchParams.get("orderBy") || "kingdomId";
     const orderDir = url.searchParams.get("orderDir") === "asc" ? 1 : -1;
   try {

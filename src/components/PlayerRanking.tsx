@@ -50,7 +50,11 @@ export const PlayerRanking = ({ kvk, announcements }: { kvk?: string, announceme
       const searchParam = search ?? "";
       const dateFilterParam = dateFilter ?? null;
       const orderParam = order ?? 'desc';
-      let url = `/api/${kvk ? `${kvk}/` : ''}players/latest?page=${page}&limit=12&sortBy=${encodeURIComponent(sortParam)}&order=${orderParam}`;
+      let url = `/api/players/latest?page=${page}&limit=12&sortBy=${encodeURIComponent(sortParam)}&order=${orderParam}`;
+
+      if (kvk) {
+        url += `&kvk=${encodeURIComponent(kvk)}`;
+      }
 
       if (searchParam.trim()) {
         url += `&search=${encodeURIComponent(searchParam.trim())}`;

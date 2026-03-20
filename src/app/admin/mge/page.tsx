@@ -1,5 +1,5 @@
 import { getSession } from "@/lib/getSession";
-import { getPrismaClient } from "@/lib/prisma";
+import { getMainPrismaClient } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { createMGEEvent, updateMGERequestStatus } from "@/lib/actions/mge";
 import { Check, X, Shield, User, ScrollText, PlusCircle, Lock } from "lucide-react";
@@ -9,8 +9,7 @@ export default async function MGEAdminPage() {
   const session = await getSession();
   if (!session || session.user.role !== "ADMIN") redirect("/");
 
-  const kvkId = process.env.KVK_DB_VERSION || "1";
-  const prisma = getPrismaClient(kvkId);
+  const prisma = getMainPrismaClient();
 
   const activeEvent = await prisma.mGEEvent.findFirst({ where: { active: true } });
   
@@ -43,8 +42,7 @@ export default async function MGEAdminPage() {
 <form 
     action={async () => {
       "use server";
-      const kvk = process.env.KVK_DB_VERSION || "1";
-      const p = getPrismaClient(kvk);
+      const p = getMainPrismaClient();
       await p.mGEEvent.updateMany({ where: { active: true }, data: { active: false } });
       revalidatePath("/admin/mge");
       revalidatePath("/mge/list"); // Garante que a lista pública atualize o status para "Final"

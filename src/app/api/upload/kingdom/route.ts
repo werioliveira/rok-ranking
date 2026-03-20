@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { getKvkPrismaClient } from "@/lib/prisma";
+import { resolveKvkSlug } from "@/lib/kvk-context";
 import * as XLSX from "xlsx";
-
-const prisma = new PrismaClient();
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,6 +10,7 @@ export async function POST(req: NextRequest) {
     const password = formData.get("password") as string;
     const kingdomId = formData.get("kingdomId") as string;
     const kingdomName = formData.get("kingdomName") as string;
+    const prisma = getKvkPrismaClient(await resolveKvkSlug(formData.get("kvk")?.toString() || null));
 
     if (!file || !kingdomId || !kingdomName) {
       return NextResponse.json(

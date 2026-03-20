@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getPrismaClient } from "@/lib/prisma";
+import { getKvkPrismaClient } from "@/lib/prisma";
+import { resolveKvkSlug } from "@/lib/kvk-context";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth"; // Verifique se o caminho do seu authOptions está correto
-
-const kvkId = process.env.KVK_DB_VERSION || "1";
-const prisma = getPrismaClient(kvkId);
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,6 +15,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
+    const prisma = getKvkPrismaClient(await resolveKvkSlug(body.kvk));
     const players = body.players;
 
     if (!Array.isArray(players)) {

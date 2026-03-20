@@ -1,11 +1,12 @@
 export const dynamic = 'force-dynamic';
-import { getPrismaClient } from "@/lib/prisma";
+import { getMainPrismaClient } from "@/lib/prisma";
+import { getActiveKvk } from "@/lib/kvk-registry";
 import { Trophy, Info, Target } from "lucide-react";
 import { formatNumber } from "@/lib/utils"; // Certifique-se de que o path está correto
 
 export default async function MGEPublicListPage() {
-  const kvkId = process.env.KVK_DB_VERSION || "1";
-  const prisma = getPrismaClient(kvkId);
+  const activeKvk = await getActiveKvk();
+  const prisma = getMainPrismaClient();
 
   const lastEvent = await prisma.mGEEvent.findFirst({
     orderBy: { createdAt: "desc" },
@@ -48,7 +49,7 @@ export default async function MGEPublicListPage() {
         ) : (
           <p className="text-slate-500">No events found</p>
         )}
-        <p className="text-slate-500 text-sm mt-2">KvK {kvkId} - Selected Governors</p>
+        <p className="text-slate-500 text-sm mt-2">{activeKvk.name} - Selected Governors</p>
       </div>
 
       {!lastEvent || finalList.length === 0 ? (
@@ -114,7 +115,7 @@ export default async function MGEPublicListPage() {
       )}
       
       <p className="text-center text-slate-600 text-[10px] mt-6 uppercase tracking-widest">
-        MGE Management System - KvK {kvkId}
+        MGE Management System - {activeKvk.name}
       </p>
     </div>
   );

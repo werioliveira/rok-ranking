@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { getPrismaClient } from "@/lib/prisma";
+import { getKvkPrismaClient } from "@/lib/prisma";
+import { resolveKvkSlug } from "@/lib/kvk-context";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -10,7 +11,7 @@ export async function GET(req: Request) {
     return NextResponse.json([]);
   }
 
-  const prisma = getPrismaClient(process.env.KVK_DB_VERSION || "3");
+  const prisma = getKvkPrismaClient(await resolveKvkSlug(searchParams.get("kvk")));
 
   try {
     const players = await prisma.playerData.findMany({

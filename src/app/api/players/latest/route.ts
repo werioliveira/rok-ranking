@@ -1,10 +1,6 @@
-import { getPrismaClient } from "@/lib/prisma";
+import { getKvkPrismaClient } from "@/lib/prisma";
+import { resolveKvkSlug } from "@/lib/kvk-context";
 import { NextResponse } from "next/server";
-// Define qual KVK usar (ex: vindo de um campo oculto no form ou env)
-const kvkId = process.env.KVK_DB_VERSION || "1";
-
-  // Obtém o cliente específico para aquele banco
-const prisma = getPrismaClient(kvkId);
 
 function serializeValue(v: any): any {
   if (v === null || v === undefined) return null;
@@ -23,6 +19,8 @@ function toUTCEpoch(dateStr: string, isEndOfDay = false) {
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
+    const kvkSlug = await resolveKvkSlug(searchParams.get("kvk"));
+    const prisma = getKvkPrismaClient(kvkSlug);
 
     const page = parseInt(searchParams.get("page") || "1", 10);
     const limit = parseInt(searchParams.get("limit") || "12", 10);

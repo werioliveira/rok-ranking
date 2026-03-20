@@ -1,0 +1,12 @@
+{
+  "activeSlug": "kvk1",
+  "kvks": [
+    {
+      "slug": "kvk1",
+      "name": "KVK1",
+      "dbFile": "kvk1.db",
+      "createdAt": "2026-03-20T00:00:00.000Z"
+    }
+  ],
+  "updatedAt": "2026-03-20T00:00:00.000Z"
+}
