@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { PlayerDetailResponse } from '@/types/playerDetails';
 
 export const usePlayerDetail = (playerId: string, kvk?: string) => {
-  const baseUrl = kvk ? `/api/${kvk}/players` : `/api/players`;
+  const baseUrl = `/api/players`;
 
 
   const [data, setData] = useState<PlayerDetailResponse | null>(null);
@@ -18,7 +18,8 @@ export const usePlayerDetail = (playerId: string, kvk?: string) => {
       setError(null);
       
       try {
-        const response = await fetch(`${baseUrl}/${playerId}`);
+        const suffix = kvk ? `?kvk=${encodeURIComponent(kvk)}` : "";
+        const response = await fetch(`${baseUrl}/${playerId}${suffix}`);
 
         
         if (!response.ok) {
@@ -37,7 +38,7 @@ export const usePlayerDetail = (playerId: string, kvk?: string) => {
     };
 
     fetchPlayerData();
-  }, [playerId]);
+  }, [baseUrl, kvk, playerId]);
 
   return { data, loading, error };
 };

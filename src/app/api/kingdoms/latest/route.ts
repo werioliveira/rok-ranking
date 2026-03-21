@@ -1,10 +1,15 @@
 import { NextResponse } from "next/server";
 import { getKvkPrismaClient } from "@/lib/prisma";
+<<<<<<< HEAD
 
 const prisma = getKvkPrismaClient(process.env.KVK_DB_VERSION || "1");
+=======
+import { resolveKvkSlug } from "@/lib/kvk-context";
+>>>>>>> codex/implementar-arquitetura-de-banco-de-dados-hibrido-yc6rdw
 
 export async function GET(req: Request) {
     const url = new URL(req.url);
+    const prisma = getKvkPrismaClient(await resolveKvkSlug(url.searchParams.get("kvk")));
     const orderBy = url.searchParams.get("orderBy") || "kingdomId";
     const orderDir = url.searchParams.get("orderDir") === "asc" ? 1 : -1;
   try {

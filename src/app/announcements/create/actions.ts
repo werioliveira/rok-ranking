@@ -64,7 +64,10 @@ export async function getAnnouncements() {
   try {
     const data = await prisma.announcement.findMany({
       orderBy: { createdAt: "desc" },
+<<<<<<< HEAD
       take: 2,
+=======
+>>>>>>> codex/implementar-arquitetura-de-banco-de-dados-hibrido-yc6rdw
     });
 
     return data.map((item) => ({
@@ -109,3 +112,26 @@ export async function updateAnnouncement(formData: FormData) {
   revalidatePath("/announcements/create");
   redirect("/announcements/create");
 }
+<<<<<<< HEAD
+=======
+
+
+export async function getLatestAnnouncements(limit = 2) {
+  try {
+    const data = await prisma.announcement.findMany({
+      where: { published: true },
+      orderBy: { createdAt: "desc" },
+      take: limit,
+    });
+
+    return data.map((item) => ({
+      ...item,
+      createdAt: item.createdAt.toISOString(),
+      updatedAt: item.updatedAt.toISOString(),
+    }));
+  } catch (error) {
+    console.error("Erro ao buscar últimos anúncios:", error);
+    return [];
+  }
+}
+>>>>>>> codex/implementar-arquitetura-de-banco-de-dados-hibrido-yc6rdw

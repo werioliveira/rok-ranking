@@ -1,5 +1,9 @@
 import { getSession } from "@/lib/getSession";
 import { getMainPrismaClient } from "@/lib/prisma";
+<<<<<<< HEAD
+=======
+import { getActiveKvk } from "@/lib/kvk-registry";
+>>>>>>> codex/implementar-arquitetura-de-banco-de-dados-hibrido-yc6rdw
 import { redirect } from "next/navigation";
 import { setMGERank } from "@/lib/actions/mge";
 import { Trophy, Star, AlertTriangle, Target } from "lucide-react";
@@ -10,7 +14,11 @@ export default async function MGERankingPage() {
   const session = await getSession();
   if (!session || session.user.role !== "ADMIN") redirect("/");
 
+<<<<<<< HEAD
   const kvkId = process.env.KVK_DB_VERSION || "1";
+=======
+  const activeKvk = await getActiveKvk();
+>>>>>>> codex/implementar-arquitetura-de-banco-de-dados-hibrido-yc6rdw
   const prisma = getMainPrismaClient();
 
   const activeEvent = await prisma.mGEEvent.findFirst({
@@ -53,7 +61,7 @@ export default async function MGERankingPage() {
             )}
           </div>
           <div className="bg-slate-900 border border-slate-800 px-4 py-2 rounded-lg text-sm font-bold text-slate-400">
-             KvK {kvkId}
+             {activeKvk.name}
           </div>
         </header>
 

@@ -1,0 +1,30 @@
+{
+  "activeSlug": "kvk4",
+  "kvks": [
+    {
+      "slug": "kvk1",
+      "name": "KVK1",
+      "dbFile": "kvk1.db",
+      "createdAt": "2026-03-20T00:00:00.000Z"
+    },
+    {
+      "slug": "kvk2",
+      "name": "KvK 2",
+      "dbFile": "kvk2.db",
+      "createdAt": "2026-03-20T19:48:22.363Z"
+    },
+    {
+      "slug": "kvk3",
+      "name": "KvK 3",
+      "dbFile": "kvk3.db",
+      "createdAt": "2026-03-20T19:50:56.170Z"
+    },
+    {
+      "slug": "kvk4",
+      "name": "KvK 4",
+      "dbFile": "kvk4.db",
+      "createdAt": "2026-03-20T19:48:01.501Z"
+    }
+  ],
+  "updatedAt": "2026-03-21T01:31:33.088Z"
+}

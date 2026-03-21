@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { getKvkPrismaClient } from "@/lib/prisma";
+<<<<<<< HEAD
+=======
+import { resolveKvkSlug } from "@/lib/kvk-context";
+>>>>>>> codex/implementar-arquitetura-de-banco-de-dados-hibrido-yc6rdw
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -10,7 +14,11 @@ export async function GET(req: Request) {
     return NextResponse.json([]);
   }
 
+<<<<<<< HEAD
   const prisma = getKvkPrismaClient(process.env.KVK_DB_VERSION || "3");
+=======
+  const prisma = getKvkPrismaClient(await resolveKvkSlug(searchParams.get("kvk")));
+>>>>>>> codex/implementar-arquitetura-de-banco-de-dados-hibrido-yc6rdw
 
   try {
     const players = await prisma.playerData.findMany({

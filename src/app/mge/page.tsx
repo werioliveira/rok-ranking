@@ -1,5 +1,9 @@
 import { getSession } from "@/lib/getSession";
 import { getMainPrismaClient } from "@/lib/prisma";
+<<<<<<< HEAD
+=======
+import { getActiveKvk } from "@/lib/kvk-registry";
+>>>>>>> codex/implementar-arquitetura-de-banco-de-dados-hibrido-yc6rdw
 import { Clock, CheckCircle2, XCircle, ShieldAlert, Calendar, Swords, Tag } from "lucide-react";
 
 export default async function MyRequestsPage() {
@@ -14,7 +18,11 @@ export default async function MyRequestsPage() {
     );
   }
 
+<<<<<<< HEAD
   const kvkId = process.env.KVK_DB_VERSION || "1";
+=======
+  const activeKvk = await getActiveKvk();
+>>>>>>> codex/implementar-arquitetura-de-banco-de-dados-hibrido-yc6rdw
   const prisma = getMainPrismaClient();
 
   const myRequests = await prisma.mGERequest.findMany({
@@ -61,7 +69,7 @@ export default async function MyRequestsPage() {
             <h1 className="text-4xl font-black text-white uppercase tracking-tight">
               My <span className="text-amber-500">Requests</span>
             </h1>
-            <p className="text-slate-500 mt-2">Track the status of your MGE reservations for KvK {kvkId}</p>
+            <p className="text-slate-500 mt-2">Track the status of your MGE reservations for {activeKvk.name}</p>
           </div>
           
           <div className="bg-slate-900/40 px-4 py-2 rounded-lg border border-slate-800 text-sm">
