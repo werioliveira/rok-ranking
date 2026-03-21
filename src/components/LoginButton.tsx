@@ -2,7 +2,7 @@
 
 import { signIn, signOut, useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
-import { LogOut, LayoutDashboard, ClipboardList, ShieldCheck, UserPlus, Megaphone } from "lucide-react";
+import { LogOut, LayoutDashboard, ClipboardList, ShieldCheck, UserPlus, Megaphone, Sword } from "lucide-react";
 import clsx from "clsx";
 import Link from "next/link";
 
@@ -111,6 +111,12 @@ export function LoginButton() {
                   <Megaphone className="w-4 h-4" />
                   Create Announcement
                 </Link>
+
+                  <Link href="/admin/kvk" className="flex items-center gap-3 px-3 py-2 text-sm text-slate-300 hover:bg-amber-500/10 hover:text-amber-500 rounded-md transition-colors" onClick={() => setOpen(false)}>
+                    <Sword className="w-4 h-4" /> KvK Control
+                  </Link>
+
+
               </>
             )}
 

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import {
   ChevronDown,
   Home,
@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 
 import { LoginButton } from "./LoginButton";
+import { useSession } from "next-auth/react";
 
 interface HeaderClientProps {
   activeSlug: string;
@@ -32,6 +33,8 @@ export default function HeaderClient({ activeSlug, kvks }: HeaderClientProps) {
   const [mobileMenu, setMobileMenu] = useState(false);
   const [isKvkOpen, setIsKvkOpen] = useState(false);
   const [isToolsOpen, setIsToolsOpen] = useState(false);
+  const {data: session} = useSession();
+  const isAdmin = session?.user.role === "ADMIN"
 
   const toolsRef = useRef<HTMLDivElement>(null);
   const kvkRef = useRef<HTMLDivElement>(null);
@@ -119,9 +122,7 @@ export default function HeaderClient({ activeSlug, kvks }: HeaderClientProps) {
                 <Link href="/mge/list" className="flex items-center px-4 py-2 text-sm hover:bg-muted" onClick={() => setIsToolsOpen(false)}>
                   <Trophy className="w-4 h-4 mr-2 text-yellow-400" /> MGE Standings
                 </Link>
-                <Link href="/admin/kvk" className="flex items-center px-4 py-2 text-sm hover:bg-muted" onClick={() => setIsToolsOpen(false)}>
-                  <Sword className="w-4 h-4 mr-2 text-primary" /> KvK Control
-                </Link>
+
               </div>
             )}
           </div>
@@ -196,9 +197,6 @@ export default function HeaderClient({ activeSlug, kvks }: HeaderClientProps) {
                 </Link>
                 <Link href="/mge/list" onClick={() => setMobileMenu(false)} className="flex items-center gap-3 text-lg font-medium">
                   <Trophy className="w-5 h-5 text-yellow-400" /> Standings
-                </Link>
-                <Link href="/admin/kvk" onClick={() => setMobileMenu(false)} className="flex items-center gap-3 text-lg font-medium">
-                  <Sword className="w-5 h-5 text-primary" /> KvK Control
                 </Link>
               </div>
             </nav>

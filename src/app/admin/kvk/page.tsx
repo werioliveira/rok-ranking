@@ -17,9 +17,7 @@ export default async function AdminKvkPage() {
           <p className="text-xs uppercase tracking-[0.3em] text-slate-500 mb-2">Admin</p>
           <h1 className="text-3xl font-black text-amber-500">KvK Database Control</h1>
           <p className="text-slate-400 mt-3 max-w-3xl">
-            Crie ou registre um KvK sem duplicar páginas ou rotas. Se o arquivo SQLite já
-            existir, o sistema apenas vincula esse KvK ao registro; se não existir, ele
-            inicializa um novo banco automaticamente.
+            Create or register a KvK without duplicating pages or routes. If the SQLite file already exists, the system simply links that KvK to the record; if it doesn't exist, it automatically initializes a new database.
           </p>
         </header>
 
@@ -27,8 +25,8 @@ export default async function AdminKvkPage() {
           <div>
             <h2 className="text-xl font-bold text-white">Create new KvK</h2>
             <p className="text-sm text-slate-400 mt-1">
-              Exemplo de slug: <span className="font-mono text-amber-400">kvk5</span>. Se
-              <span className="font-mono text-amber-400"> prisma/kvk5.db </span> já existir, ele será reaproveitado.
+              Slug example: <span className="font-mono text-amber-400">kvk5</span>. If
+              <span className="font-mono text-amber-400"> prisma/kvk5.db </span> already exists, it will be reused.
             </p>
           </div>
 
@@ -61,7 +59,7 @@ export default async function AdminKvkPage() {
           <div>
             <h2 className="text-xl font-bold text-white">Registered KvKs</h2>
             <p className="text-sm text-slate-400 mt-1">
-              O KvK ativo define a Home, uploads sem parâmetro e os endpoints padrão do sistema.
+              The active KvK defines the Home page, uploads without parameters, and the system's default endpoints.
             </p>
           </div>
 
