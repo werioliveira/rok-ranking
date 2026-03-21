@@ -1,9 +1,6 @@
 import { getSession } from "@/lib/getSession";
 import { getMainPrismaClient } from "@/lib/prisma";
-<<<<<<< HEAD
-=======
 import { getActiveKvk } from "@/lib/kvk-registry";
->>>>>>> codex/implementar-arquitetura-de-banco-de-dados-hibrido-yc6rdw
 import { Clock, CheckCircle2, XCircle, ShieldAlert, Calendar, Swords, Tag } from "lucide-react";
 
 export default async function MyRequestsPage() {
@@ -18,11 +15,7 @@ export default async function MyRequestsPage() {
     );
   }
 
-<<<<<<< HEAD
-  const kvkId = process.env.KVK_DB_VERSION || "1";
-=======
   const activeKvk = await getActiveKvk();
->>>>>>> codex/implementar-arquitetura-de-banco-de-dados-hibrido-yc6rdw
   const prisma = getMainPrismaClient();
 
   const myRequests = await prisma.mGERequest.findMany({

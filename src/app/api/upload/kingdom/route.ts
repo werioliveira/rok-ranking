@@ -1,15 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getKvkPrismaClient } from "@/lib/prisma";
-<<<<<<< HEAD
-import * as XLSX from "xlsx";
-
-const prisma = getKvkPrismaClient(process.env.KVK_DB_VERSION || "1");
-
-=======
 import { resolveKvkSlug } from "@/lib/kvk-context";
 import * as XLSX from "xlsx";
 
->>>>>>> codex/implementar-arquitetura-de-banco-de-dados-hibrido-yc6rdw
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();

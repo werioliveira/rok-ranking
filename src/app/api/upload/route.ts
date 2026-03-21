@@ -1,18 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getKvkPrismaClient } from "@/lib/prisma";
-<<<<<<< HEAD
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth"; // Verifique se o caminho do seu authOptions está correto
-
-const kvkId = process.env.KVK_DB_VERSION || "1";
-const prisma = getKvkPrismaClient(kvkId);
-
-=======
 import { resolveKvkSlug } from "@/lib/kvk-context";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth"; // Verifique se o caminho do seu authOptions está correto
 
->>>>>>> codex/implementar-arquitetura-de-banco-de-dados-hibrido-yc6rdw
 export async function POST(req: NextRequest) {
   try {
     // 1. Verifica a sessão do usuário no servidor

@@ -64,10 +64,7 @@ export async function getAnnouncements() {
   try {
     const data = await prisma.announcement.findMany({
       orderBy: { createdAt: "desc" },
-<<<<<<< HEAD
       take: 2,
-=======
->>>>>>> codex/implementar-arquitetura-de-banco-de-dados-hibrido-yc6rdw
     });
 
     return data.map((item) => ({
@@ -112,8 +109,6 @@ export async function updateAnnouncement(formData: FormData) {
   revalidatePath("/announcements/create");
   redirect("/announcements/create");
 }
-<<<<<<< HEAD
-=======
 
 
 export async function getLatestAnnouncements(limit = 2) {
@@ -134,4 +129,3 @@ export async function getLatestAnnouncements(limit = 2) {
     return [];
   }
 }
->>>>>>> codex/implementar-arquitetura-de-banco-de-dados-hibrido-yc6rdw

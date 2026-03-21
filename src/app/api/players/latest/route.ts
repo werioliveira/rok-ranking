@@ -1,15 +1,6 @@
 import { getKvkPrismaClient } from "@/lib/prisma";
-<<<<<<< HEAD
-import { NextResponse } from "next/server";
-// Define qual KVK usar (ex: vindo de um campo oculto no form ou env)
-const kvkId = process.env.KVK_DB_VERSION || "1";
-
-  // Obtém o cliente específico para aquele banco
-const prisma = getKvkPrismaClient(kvkId);
-=======
 import { resolveKvkSlug } from "@/lib/kvk-context";
 import { NextResponse } from "next/server";
->>>>>>> codex/implementar-arquitetura-de-banco-de-dados-hibrido-yc6rdw
 
 function serializeValue(v: any): any {
   if (v === null || v === undefined) return null;

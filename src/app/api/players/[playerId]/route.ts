@@ -2,15 +2,7 @@
 import { NextResponse } from "next/server"
 
 import { getKvkPrismaClient } from "@/lib/prisma";
-<<<<<<< HEAD
-
-const kvkId = process.env.KVK_DB_VERSION || "1";
-
-  // Obtém o cliente específico para aquele banco
-const prisma = getKvkPrismaClient(kvkId);
-=======
 import { resolveKvkSlug } from "@/lib/kvk-context";
->>>>>>> codex/implementar-arquitetura-de-banco-de-dados-hibrido-yc6rdw
 
 // Helper function para converter BigInt para Number recursivamente
 function convertBigIntAndDate(obj: any): any {
