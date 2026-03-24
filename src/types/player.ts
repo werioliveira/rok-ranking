@@ -27,6 +27,7 @@ export interface Player {
   helps: number
   alliance: string
   deadsGained: number;
+  acclaim: string | number | null
 }
 // Adicione ao seu types/player.ts existente
 export interface PlayerResponse extends PaginatedResponse<Player> {}

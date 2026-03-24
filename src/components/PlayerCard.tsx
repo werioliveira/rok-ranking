@@ -255,6 +255,32 @@ export const PlayerCard = ({ player, rank, kvk }: PlayerCardProps) => {
             </div>
             
           )}
+          {/* Deads gained */}
+          {player.acclaim !== undefined && (
+            <div className="flex items-center justify-center gap-2 text-xs">
+              {(() => {
+                const acclaimGained = Number(player.acclaim) || 0;
+                return (
+                  <>
+                    <TrendingUp
+                      className={`w-3 h-3 text-green-500 ${
+                        acclaimGained < 0 ? "rotate-180" : ""
+                      }`}
+                    />
+                    <span className="text-muted-foreground">
+                      Acclaim Gained:
+                    </span>
+                    <span className={`font-semibold text-green-500`}>
+                      {acclaimGained > 0 ? "+" : ""}
+                      {formatNumber(acclaimGained)}
+                    </span>
+                  </>
+                );
+              })()}
+
+            </div>
+            
+          )}
 <DkpDisplay 
   t4={Number(player.t4KillsGained)} 
   t5={Number(player.t5KillsGained)} 
